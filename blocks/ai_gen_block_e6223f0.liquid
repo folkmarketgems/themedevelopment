@@ -1,0 +1,617 @@
+{% doc %}
+  @prompt
+    Create a simple table displaying gemstone specifications with schema markup for SEO. Include fields for stone name, total weight, average size, dimensions, shapes/cut, carat weight, color, clarity, origin, treatments, birthstones, and deal type. Use H2 heading "Gemstone Specification", support up to 3 entries per field, hide empty fields, and add structured data markup for search engines like Google, Bing, and Yahoo.
+
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-gemstone-table-{{ ai_gen_id }} {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    background-color: {{ block.settings.background_color }};
+    border-radius: {{ block.settings.border_radius }}px;
+    padding: 24px;
+  }
+
+  .ai-gemstone-table__heading-{{ ai_gen_id }} {
+    color: {{ block.settings.heading_color }};
+    font-size: {{ block.settings.heading_size }}px;
+    margin: 0 0 24px 0;
+    text-align: {{ block.settings.heading_alignment }};
+  }
+
+  .ai-gemstone-table__table-{{ ai_gen_id }} {
+    width: 100%;
+    border-collapse: collapse;
+    border: {{ block.settings.table_border_width }}px solid {{ block.settings.border_color }};
+    border-radius: {{ block.settings.table_border_radius }}px;
+    overflow: hidden;
+  }
+
+  .ai-gemstone-table__header-{{ ai_gen_id }} {
+    background-color: {{ block.settings.header_bg_color }};
+    color: {{ block.settings.header_text_color }};
+    font-weight: 600;
+    text-align: left;
+    padding: 12px 16px;
+    border-bottom: {{ block.settings.table_border_width }}px solid {{ block.settings.border_color }};
+  }
+
+  .ai-gemstone-table__cell-{{ ai_gen_id }} {
+    padding: 12px 16px;
+    border-bottom: 1px solid {{ block.settings.border_color }};
+    color: {{ block.settings.text_color }};
+    vertical-align: top;
+  }
+
+  .ai-gemstone-table__row-{{ ai_gen_id }}:nth-child(even) {
+    background-color: {{ block.settings.row_bg_color }};
+  }
+
+  .ai-gemstone-table__row-{{ ai_gen_id }}:last-child .ai-gemstone-table__cell-{{ ai_gen_id }} {
+    border-bottom: none;
+  }
+
+  .ai-gemstone-table__label-{{ ai_gen_id }} {
+    font-weight: 600;
+    color: {{ block.settings.label_color }};
+  }
+
+  @media screen and (max-width: 749px) {
+    .ai-gemstone-table-{{ ai_gen_id }} {
+      padding: 16px;
+    }
+
+    .ai-gemstone-table__table-{{ ai_gen_id }} {
+      font-size: 14px;
+    }
+
+    .ai-gemstone-table__header-{{ ai_gen_id }},
+    .ai-gemstone-table__cell-{{ ai_gen_id }} {
+      padding: 8px 12px;
+    }
+  }
+{% endstyle %}
+
+<div class="ai-gemstone-table-{{ ai_gen_id }}" {{ block.shopify_attributes }}>
+  <h2 class="ai-gemstone-table__heading-{{ ai_gen_id }}">{{ block.settings.heading }}</h2>
+  
+  <table class="ai-gemstone-table__table-{{ ai_gen_id }}">
+    <thead>
+      <tr>
+        <th class="ai-gemstone-table__header-{{ ai_gen_id }}">Specification</th>
+        <th class="ai-gemstone-table__header-{{ ai_gen_id }}">Details</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if block.settings.stone_name_1 != blank or block.settings.stone_name_2 != blank or block.settings.stone_name_3 != blank %}
+        <tr class="ai-gemstone-table__row-{{ ai_gen_id }}">
+          <td class="ai-gemstone-table__cell-{{ ai_gen_id }}">
+            <span class="ai-gemstone-table__label-{{ ai_gen_id }}">Stone Name</span>
+          </td>
+          <td class="ai-gemstone-table__cell-{{ ai_gen_id }}">
+            {% assign stone_names = '' %}
+            {% if block.settings.stone_name_1 != blank %}
+              {% assign stone_names = stone_names | append: block.settings.stone_name_1 %}
+            {% endif %}
+            {% if block.settings.stone_name_2 != blank %}
+              {% if stone_names != blank %}{% assign stone_names = stone_names | append: ', ' %}{% endif %}
+              {% assign stone_names = stone_names | append: block.settings.stone_name_2 %}
+            {% endif %}
+            {% if block.settings.stone_name_3 != blank %}
+              {% if stone_names != blank %}{% assign stone_names = stone_names | append: ', ' %}{% endif %}
+              {% assign stone_names = stone_names | append: block.settings.stone_name_3 %}
+            {% endif %}
+            {{ stone_names }}
+          </td>
+        </tr>
+      {% endif %}
+
+      {% if block.settings.total_weight != blank %}
+        <tr class="ai-gemstone-table__row-{{ ai_gen_id }}">
+          <td class="ai-gemstone-table__cell-{{ ai_gen_id }}">
+            <span class="ai-gemstone-table__label-{{ ai_gen_id }}">Total Weight</span>
+          </td>
+          <td class="ai-gemstone-table__cell-{{ ai_gen_id }}">{{ block.settings.total_weight }}</td>
+        </tr>
+      {% endif %}
+
+      {% if block.settings.average_size != blank %}
+        <tr class="ai-gemstone-table__row-{{ ai_gen_id }}">
+          <td class="ai-gemstone-table__cell-{{ ai_gen_id }}">
+            <span class="ai-gemstone-table__label-{{ ai_gen_id }}">Average Size</span>
+          </td>
+          <td class="ai-gemstone-table__cell-{{ ai_gen_id }}">{{ block.settings.average_size }}</td>
+        </tr>
+      {% endif %}
+
+      {% if block.settings.dimensions != blank %}
+        <tr class="ai-gemstone-table__row-{{ ai_gen_id }}">
+          <td class="ai-gemstone-table__cell-{{ ai_gen_id }}">
+            <span class="ai-gemstone-table__label-{{ ai_gen_id }}">Dimensions</span>
+          </td>
+          <td class="ai-gemstone-table__cell-{{ ai_gen_id }}">{{ block.settings.dimensions }}</td>
+        </tr>
+      {% endif %}
+
+      {% if block.settings.shape_cut_1 != blank or block.settings.shape_cut_2 != blank or block.settings.shape_cut_3 != blank %}
+        <tr class="ai-gemstone-table__row-{{ ai_gen_id }}">
+          <td class="ai-gemstone-table__cell-{{ ai_gen_id }}">
+            <span class="ai-gemstone-table__label-{{ ai_gen_id }}">Shapes/Cut</span>
+          </td>
+          <td class="ai-gemstone-table__cell-{{ ai_gen_id }}">
+            {% assign shapes = '' %}
+            {% if block.settings.shape_cut_1 != blank %}
+              {% assign shapes = shapes | append: block.settings.shape_cut_1 %}
+            {% endif %}
+            {% if block.settings.shape_cut_2 != blank %}
+              {% if shapes != blank %}{% assign shapes = shapes | append: ', ' %}{% endif %}
+              {% assign shapes = shapes | append: block.settings.shape_cut_2 %}
+            {% endif %}
+            {% if block.settings.shape_cut_3 != blank %}
+              {% if shapes != blank %}{% assign shapes = shapes | append: ', ' %}{% endif %}
+              {% assign shapes = shapes | append: block.settings.shape_cut_3 %}
+            {% endif %}
+            {{ shapes }}
+          </td>
+        </tr>
+      {% endif %}
+
+      {% if block.settings.carat_weight != blank %}
+        <tr class="ai-gemstone-table__row-{{ ai_gen_id }}">
+          <td class="ai-gemstone-table__cell-{{ ai_gen_id }}">
+            <span class="ai-gemstone-table__label-{{ ai_gen_id }}">Carat Weight</span>
+          </td>
+          <td class="ai-gemstone-table__cell-{{ ai_gen_id }}">{{ block.settings.carat_weight }}</td>
+        </tr>
+      {% endif %}
+
+      {% if block.settings.color_1 != blank or block.settings.color_2 != blank or block.settings.color_3 != blank %}
+        <tr class="ai-gemstone-table__row-{{ ai_gen_id }}">
+          <td class="ai-gemstone-table__cell-{{ ai_gen_id }}">
+            <span class="ai-gemstone-table__label-{{ ai_gen_id }}">Color</span>
+          </td>
+          <td class="ai-gemstone-table__cell-{{ ai_gen_id }}">
+            {% assign colors = '' %}
+            {% if block.settings.color_1 != blank %}
+              {% assign colors = colors | append: block.settings.color_1 %}
+            {% endif %}
+            {% if block.settings.color_2 != blank %}
+              {% if colors != blank %}{% assign colors = colors | append: ', ' %}{% endif %}
+              {% assign colors = colors | append: block.settings.color_2 %}
+            {% endif %}
+            {% if block.settings.color_3 != blank %}
+              {% if colors != blank %}{% assign colors = colors | append: ', ' %}{% endif %}
+              {% assign colors = colors | append: block.settings.color_3 %}
+            {% endif %}
+            {{ colors }}
+          </td>
+        </tr>
+      {% endif %}
+
+      {% if block.settings.clarity != blank %}
+        <tr class="ai-gemstone-table__row-{{ ai_gen_id }}">
+          <td class="ai-gemstone-table__cell-{{ ai_gen_id }}">
+            <span class="ai-gemstone-table__label-{{ ai_gen_id }}">Clarity</span>
+          </td>
+          <td class="ai-gemstone-table__cell-{{ ai_gen_id }}">{{ block.settings.clarity }}</td>
+        </tr>
+      {% endif %}
+
+      {% if block.settings.origin_1 != blank or block.settings.origin_2 != blank or block.settings.origin_3 != blank %}
+        <tr class="ai-gemstone-table__row-{{ ai_gen_id }}">
+          <td class="ai-gemstone-table__cell-{{ ai_gen_id }}">
+            <span class="ai-gemstone-table__label-{{ ai_gen_id }}">Origin</span>
+          </td>
+          <td class="ai-gemstone-table__cell-{{ ai_gen_id }}">
+            {% assign origins = '' %}
+            {% if block.settings.origin_1 != blank %}
+              {% assign origins = origins | append: block.settings.origin_1 %}
+            {% endif %}
+            {% if block.settings.origin_2 != blank %}
+              {% if origins != blank %}{% assign origins = origins | append: ', ' %}{% endif %}
+              {% assign origins = origins | append: block.settings.origin_2 %}
+            {% endif %}
+            {% if block.settings.origin_3 != blank %}
+              {% if origins != blank %}{% assign origins = origins | append: ', ' %}{% endif %}
+              {% assign origins = origins | append: block.settings.origin_3 %}
+            {% endif %}
+            {{ origins }}
+          </td>
+        </tr>
+      {% endif %}
+
+      {% if block.settings.treatment_1 != blank or block.settings.treatment_2 != blank or block.settings.treatment_3 != blank %}
+        <tr class="ai-gemstone-table__row-{{ ai_gen_id }}">
+          <td class="ai-gemstone-table__cell-{{ ai_gen_id }}">
+            <span class="ai-gemstone-table__label-{{ ai_gen_id }}">Treatments</span>
+          </td>
+          <td class="ai-gemstone-table__cell-{{ ai_gen_id }}">
+            {% assign treatments = '' %}
+            {% if block.settings.treatment_1 != blank %}
+              {% assign treatments = treatments | append: block.settings.treatment_1 %}
+            {% endif %}
+            {% if block.settings.treatment_2 != blank %}
+              {% if treatments != blank %}{% assign treatments = treatments | append: ', ' %}{% endif %}
+              {% assign treatments = treatments | append: block.settings.treatment_2 %}
+            {% endif %}
+            {% if block.settings.treatment_3 != blank %}
+              {% if treatments != blank %}{% assign treatments = treatments | append: ', ' %}{% endif %}
+              {% assign treatments = treatments | append: block.settings.treatment_3 %}
+            {% endif %}
+            {{ treatments }}
+          </td>
+        </tr>
+      {% endif %}
+
+      {% if block.settings.birthstone_1 != blank or block.settings.birthstone_2 != blank or block.settings.birthstone_3 != blank %}
+        <tr class="ai-gemstone-table__row-{{ ai_gen_id }}">
+          <td class="ai-gemstone-table__cell-{{ ai_gen_id }}">
+            <span class="ai-gemstone-table__label-{{ ai_gen_id }}">Birthstones</span>
+          </td>
+          <td class="ai-gemstone-table__cell-{{ ai_gen_id }}">
+            {% assign birthstones = '' %}
+            {% if block.settings.birthstone_1 != blank %}
+              {% assign birthstones = birthstones | append: block.settings.birthstone_1 %}
+            {% endif %}
+            {% if block.settings.birthstone_2 != blank %}
+              {% if birthstones != blank %}{% assign birthstones = birthstones | append: ', ' %}{% endif %}
+              {% assign birthstones = birthstones | append: block.settings.birthstone_2 %}
+            {% endif %}
+            {% if block.settings.birthstone_3 != blank %}
+              {% if birthstones != blank %}{% assign birthstones = birthstones | append: ', ' %}{% endif %}
+              {% assign birthstones = birthstones | append: block.settings.birthstone_3 %}
+            {% endif %}
+            {{ birthstones }}
+          </td>
+        </tr>
+      {% endif %}
+
+      {% if block.settings.deal_type != blank %}
+        <tr class="ai-gemstone-table__row-{{ ai_gen_id }}">
+          <td class="ai-gemstone-table__cell-{{ ai_gen_id }}">
+            <span class="ai-gemstone-table__label-{{ ai_gen_id }}">Deal Type</span>
+          </td>
+          <td class="ai-gemstone-table__cell-{{ ai_gen_id }}">{{ block.settings.deal_type }}</td>
+        </tr>
+      {% endif %}
+    </tbody>
+  </table>
+</div><script type="application/ld+json">
+{
+  "@context": "https://schema.org/",
+  "@type": "Product",
+  "name": "{% if block.settings.stone_name_1 != blank %}{{ block.settings.stone_name_1 | escape }}{% endif %}",
+  "description": "Gemstone specifications including {% if block.settings.total_weight != blank %}weight: {{ block.settings.total_weight | escape }}, {% endif %}{% if block.settings.carat_weight != blank %}carat weight: {{ block.settings.carat_weight | escape }}, {% endif %}{% if block.settings.color_1 != blank %}color: {{ block.settings.color_1 | escape }}{% endif %}",
+  "category": "Gemstone",
+  {% if block.settings.total_weight != blank %}
+  "weight": {
+    "@type": "QuantitativeValue",
+    "value": "{{ block.settings.total_weight | escape }}"
+  },
+  {% endif %}
+  "additionalProperty": [
+    {% if block.settings.carat_weight != blank %}
+    {
+      "@type": "PropertyValue",
+      "name": "Carat Weight",
+      "value": "{{ block.settings.carat_weight | escape }}"
+    },
+    {% endif %}
+    {% if block.settings.color_1 != blank %}
+    {
+      "@type": "PropertyValue",
+      "name": "Color",
+      "value": "{{ block.settings.color_1 | escape }}"
+    },
+    {% endif %}
+    {% if block.settings.clarity != blank %}
+    {
+      "@type": "PropertyValue",
+      "name": "Clarity",
+      "value": "{{ block.settings.clarity | escape }}"
+    },
+    {% endif %}
+    {% if block.settings.origin_1 != blank %}
+    {
+      "@type": "PropertyValue",
+      "name": "Origin",
+      "value": "{{ block.settings.origin_1 | escape }}"
+    },
+    {% endif %}
+    {% if block.settings.shape_cut_1 != blank %}
+    {
+      "@type": "PropertyValue",
+      "name": "Cut",
+      "value": "{{ block.settings.shape_cut_1 | escape }}"
+    }
+    {% endif %}
+  ]
+}
+</script>
+
+{% schema %}
+{
+  "name": "Gemstone specs",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Heading"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Gemstone Specification"
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "min": 16,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "label": "Heading size",
+      "default": 24
+    },
+    {
+      "type": "select",
+      "id": "heading_alignment",
+      "label": "Heading alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "header",
+      "content": "Stone names"
+    },
+    {
+      "type": "text",
+      "id": "stone_name_1",
+      "label": "Stone name 1"
+    },
+    {
+      "type": "text",
+      "id": "stone_name_2",
+      "label": "Stone name 2"
+    },
+    {
+      "type": "text",
+      "id": "stone_name_3",
+      "label": "Stone name 3"
+    },
+    {
+      "type": "header",
+      "content": "Weight and size"
+    },
+    {
+      "type": "text",
+      "id": "total_weight",
+      "label": "Total weight"
+    },
+    {
+      "type": "text",
+      "id": "average_size",
+      "label": "Average size"
+    },
+    {
+      "type": "text",
+      "id": "dimensions",
+      "label": "Dimensions"
+    },
+    {
+      "type": "text",
+      "id": "carat_weight",
+      "label": "Carat weight"
+    },
+    {
+      "type": "header",
+      "content": "Shapes and cuts"
+    },
+    {
+      "type": "text",
+      "id": "shape_cut_1",
+      "label": "Shape/cut 1"
+    },
+    {
+      "type": "text",
+      "id": "shape_cut_2",
+      "label": "Shape/cut 2"
+    },
+    {
+      "type": "text",
+      "id": "shape_cut_3",
+      "label": "Shape/cut 3"
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "text",
+      "id": "color_1",
+      "label": "Color 1"
+    },
+    {
+      "type": "text",
+      "id": "color_2",
+      "label": "Color 2"
+    },
+    {
+      "type": "text",
+      "id": "color_3",
+      "label": "Color 3"
+    },
+    {
+      "type": "header",
+      "content": "Quality and origin"
+    },
+    {
+      "type": "text",
+      "id": "clarity",
+      "label": "Clarity"
+    },
+    {
+      "type": "text",
+      "id": "origin_1",
+      "label": "Origin 1"
+    },
+    {
+      "type": "text",
+      "id": "origin_2",
+      "label": "Origin 2"
+    },
+    {
+      "type": "text",
+      "id": "origin_3",
+      "label": "Origin 3"
+    },
+    {
+      "type": "header",
+      "content": "Treatments"
+    },
+    {
+      "type": "text",
+      "id": "treatment_1",
+      "label": "Treatment 1"
+    },
+    {
+      "type": "text",
+      "id": "treatment_2",
+      "label": "Treatment 2"
+    },
+    {
+      "type": "text",
+      "id": "treatment_3",
+      "label": "Treatment 3"
+    },
+    {
+      "type": "header",
+      "content": "Additional info"
+    },
+    {
+      "type": "text",
+      "id": "birthstone_1",
+      "label": "Birthstone 1"
+    },
+    {
+      "type": "text",
+      "id": "birthstone_2",
+      "label": "Birthstone 2"
+    },
+    {
+      "type": "text",
+      "id": "birthstone_3",
+      "label": "Birthstone 3"
+    },
+    {
+      "type": "text",
+      "id": "deal_type",
+      "label": "Deal type"
+    },
+    {
+      "type": "header",
+      "content": "Style"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Heading color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "label_color",
+      "label": "Label color",
+      "default": "#333333"
+    },
+    {
+      "type": "color",
+      "id": "header_bg_color",
+      "label": "Header background",
+      "default": "#f5f5f5"
+    },
+    {
+      "type": "color",
+      "id": "header_text_color",
+      "label": "Header text color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "row_bg_color",
+      "label": "Alternate row background",
+      "default": "#fafafa"
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "Border color",
+      "default": "#e6e6e6"
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "min": 0,
+      "max": 20,
+      "step": 2,
+      "unit": "px",
+      "label": "Border radius",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "table_border_radius",
+      "min": 0,
+      "max": 16,
+      "step": 2,
+      "unit": "px",
+      "label": "Table border radius",
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "table_border_width",
+      "min": 0,
+      "max": 4,
+      "step": 1,
+      "unit": "px",
+      "label": "Table border width",
+      "default": 1
+    }
+  ],
+  "presets": [
+    {
+      "name": "Gemstone specs"
+    }
+  ],
+  "tag": null
+}
+{% endschema %}

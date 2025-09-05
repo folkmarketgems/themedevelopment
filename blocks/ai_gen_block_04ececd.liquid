@@ -1,0 +1,381 @@
+{% doc %}
+  @prompt
+    Create a product information section that displays vendor, SKU, and product type automatically from product data. The section should show these fields with labels and pull the information dynamically from the product backend., align each infront of label
+
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-product-info-{{ ai_gen_id }} {
+    padding: {{ block.settings.padding }}px;
+    background-color: {{ block.settings.background_color }};
+    border-radius: {{ block.settings.border_radius }}px;
+    {% if block.settings.show_border %}
+      border: {{ block.settings.border_width }}px solid {{ block.settings.border_color }};
+    {% endif %}
+  }
+
+  .ai-product-info__heading-{{ ai_gen_id }} {
+    margin: 0 0 {{ block.settings.spacing }}px 0;
+    font-size: {{ block.settings.heading_size }}px;
+    color: {{ block.settings.heading_color }};
+    font-weight: 600;
+  }
+
+  .ai-product-info__list-{{ ai_gen_id }} {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: {{ block.settings.spacing }}px;
+  }
+
+  .ai-product-info__item-{{ ai_gen_id }} {
+    display: grid;
+    grid-template-columns: {{ block.settings.label_width }}px 1fr;
+    gap: 12px;
+    align-items: start;
+  }
+
+  .ai-product-info__label-{{ ai_gen_id }} {
+    font-size: {{ block.settings.label_size }}px;
+    color: {{ block.settings.label_color }};
+    font-weight: 600;text-align: left;
+  }
+
+  .ai-product-info__value-{{ ai_gen_id }} {
+    font-size: {{ block.settings.value_size }}px;
+    color: {{ block.settings.value_color }};
+  }
+
+  .ai-product-info__empty-{{ ai_gen_id }} {
+    font-style: italic;
+    color: {{ block.settings.value_color | color_modify: 'alpha', 0.6 }};
+  }
+
+  @media screen and (max-width: 749px) {
+    .ai-product-info__item-{{ ai_gen_id }} {
+      {% if block.settings.mobile_layout == 'stacked' %}
+        grid-template-columns: 1fr;gap: 4px;
+      {% else %}
+        grid-template-columns: {{ block.settings.label_width | times: 0.8 }}px 1fr;
+        gap: 8px;
+      {% endif %}
+    }
+  }
+{% endstyle %}<div class="ai-product-info-{{ ai_gen_id }}" {{ block.shopify_attributes }}>
+  {% if block.settings.heading != blank %}
+    <h3 class="ai-product-info__heading-{{ ai_gen_id }}">{{ block.settings.heading }}</h3>
+  {% endif %}<ul class="ai-product-info__list-{{ ai_gen_id }}">
+    {% if block.settings.show_vendor %}
+      <li class="ai-product-info__item-{{ ai_gen_id }}">
+        <span class="ai-product-info__label-{{ ai_gen_id }}">{{ block.settings.vendor_label }}:</span>
+        <span class="ai-product-info__value-{{ ai_gen_id }}">
+          {% if product.vendor != blank %}
+            {{ product.vendor }}
+          {% else %}<span class="ai-product-info__empty-{{ ai_gen_id }}">{{ block.settings.empty_text }}</span>
+          {% endif %}
+        </span>
+      </li>
+    {% endif %}
+
+    {% if block.settings.show_sku %}
+      <li class="ai-product-info__item-{{ ai_gen_id }}">
+        <span class="ai-product-info__label-{{ ai_gen_id }}">{{ block.settings.sku_label }}:</span>
+        <span class="ai-product-info__value-{{ ai_gen_id }}">
+          {% if product.selected_or_first_available_variant.sku != blank %}
+            {{ product.selected_or_first_available_variant.sku }}
+          {% else %}
+            <span class="ai-product-info__empty-{{ ai_gen_id }}">{{ block.settings.empty_text }}</span>
+          {% endif %}
+        </span>
+      </li>
+    {% endif %}
+
+    {% if block.settings.show_type %}
+      <li class="ai-product-info__item-{{ ai_gen_id }}">
+        <span class="ai-product-info__label-{{ ai_gen_id }}">{{ block.settings.type_label }}:</span>
+        <span class="ai-product-info__value-{{ ai_gen_id }}">
+          {% if product.type != blank %}
+            {{ product.type }}
+          {% else %}
+            <span class="ai-product-info__empty-{{ ai_gen_id }}">{{ block.settings.empty_text }}</span>
+          {% endif %}
+        </span>
+      </li>
+    {% endif %}
+
+    {% if block.settings.show_tags and product.tags.size > 0 %}
+      <li class="ai-product-info__item-{{ ai_gen_id }}">
+        <span class="ai-product-info__label-{{ ai_gen_id }}">{{ block.settings.tags_label }}:</span>
+        <span class="ai-product-info__value-{{ ai_gen_id }}">
+          {{ product.tags | join: ', ' }}
+        </span>
+      </li>
+    {% endif %}
+
+    {% if block.settings.show_availability %}
+      <li class="ai-product-info__item-{{ ai_gen_id }}">
+        <span class="ai-product-info__label-{{ ai_gen_id }}">{{ block.settings.availability_label }}:</span>
+        <span class="ai-product-info__value-{{ ai_gen_id }}">
+          {% if product.available %}
+            {{ block.settings.in_stock_text }}
+          {% else %}
+            {{ block.settings.out_of_stock_text }}
+          {% endif %}
+        </span>
+      </li>
+    {% endif %}
+  </ul>
+</div>
+
+{% schema %}
+{
+  "name": "Product information",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Product details"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_vendor",
+      "label": "Show vendor",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_sku",
+      "label": "Show SKU",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_type",
+      "label": "Show product type",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_tags",
+      "label": "Show tags",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_availability",
+      "label": "Show availability",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Labels"
+    },
+    {
+      "type": "text",
+      "id": "vendor_label",
+      "label": "Vendor label",
+      "default": "Brand"
+    },
+    {
+      "type": "text",
+      "id": "sku_label",
+      "label": "SKU label",
+      "default": "SKU"
+    },
+    {
+      "type": "text",
+      "id": "type_label",
+      "label": "Type label",
+      "default": "Product type"
+    },
+    {
+      "type": "text",
+      "id": "tags_label",
+      "label": "Tags label",
+      "default": "Tags"
+    },
+    {
+      "type": "text",
+      "id": "availability_label",
+      "label": "Availability label",
+      "default": "Availability"
+    },
+    {
+      "type": "text",
+      "id": "empty_text",
+      "label": "Empty field text",
+      "default": "Not specified"
+    },
+    {
+      "type": "text",
+      "id": "in_stock_text",
+      "label": "In stock text",
+      "default": "In stock"
+    },
+    {
+      "type": "text",
+      "id": "out_of_stock_text",
+      "label": "Out of stock text",
+      "default": "Out of stock"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "mobile_layout",
+      "label": "Mobile layout",
+      "options": [
+        {
+          "value": "inline",
+          "label": "Inline"
+        },
+        {
+          "value": "stacked",
+          "label": "Stacked"
+        }
+      ],
+      "default": "stacked"
+    },
+    {
+      "type": "range",
+      "id": "label_width",
+      "min": 80,
+      "max": 200,
+      "step": 10,
+      "unit": "px",
+      "label": "Label width",
+      "default": 120
+    },
+    {
+      "type": "range",
+      "id": "spacing",
+      "min": 4,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "label": "Item spacing",
+      "default": 12
+    },
+    {
+      "type": "header",
+      "content": "Style"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#f8f8f8"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Heading color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "label_color",
+      "label": "Label color",
+      "default": "#666666"
+    },
+    {
+      "type": "color",
+      "id": "value_color",
+      "label": "Value color",
+      "default": "#000000"
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "min": 12,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "label": "Heading size",
+      "default": 18
+    },
+    {
+      "type": "range",
+      "id": "label_size",
+      "min": 10,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Label size",
+      "default": 14
+    },
+    {
+      "type": "range",
+      "id": "value_size",
+      "min": 10,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Value size",
+      "default": 14
+    },
+    {
+      "type": "range",
+      "id": "padding",
+      "min": 0,
+      "max": 60,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "min": 0,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Border radius",
+      "default": 8
+    },
+    {
+      "type": "header",
+      "content": "Border"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_border",
+      "label": "Show border",
+      "default": false
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "Border color",
+      "default": "#e0e0e0"
+    },
+    {
+      "type": "range",
+      "id": "border_width",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "unit": "px",
+      "label": "Border width",
+      "default": 1
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product information"
+    }
+  ],
+  "tag": null
+}
+{% endschema %}

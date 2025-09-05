@@ -1,0 +1,457 @@
+{% doc %}
+  @prompt
+    generate a block related product tags in button shape.
+
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-product-tags-{{ ai_gen_id }} {
+    display: flex;
+    flex-wrap: wrap;
+    gap: {{ block.settings.tag_spacing }}px;
+    padding: {{ block.settings.container_padding }}px;
+    background-color: {{ block.settings.background_color }};
+    border-radius: {{ block.settings.container_border_radius }}px;}
+
+  .ai-product-tags__title-{{ ai_gen_id }} {
+    width: 100%;
+    margin: 0 0 {{ block.settings.title_margin_bottom }}px 0;
+    font-size: {{ block.settings.title_font_size }}px;
+    font-weight: {{ block.settings.title_font_weight }};
+    color: {{ block.settings.title_color }};
+    text-align: {{ block.settings.title_alignment }};
+  }
+
+  .ai-product-tags__tag-{{ ai_gen_id }} {
+    display: inline-flex;
+    align-items: center;
+    padding: {{ block.settings.tag_padding_vertical }}px {{ block.settings.tag_padding_horizontal }}px;
+    background-color: {{ block.settings.tag_background_color }};
+    color: {{ block.settings.tag_text_color }};
+    border: {{ block.settings.tag_border_width }}px solid {{ block.settings.tag_border_color }};
+    border-radius: {{ block.settings.tag_border_radius }}px;
+    font-size: {{ block.settings.tag_font_size }}px;
+    font-weight: {{ block.settings.tag_font_weight }};
+    text-decoration: none;
+    text-transform: {{ block.settings.tag_text_transform }};
+    transition: all 0.3s ease;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .ai-product-tags__tag-{{ ai_gen_id }}:hover {
+    background-color: {{ block.settings.tag_hover_background_color }};
+    color: {{ block.settings.tag_hover_text_color }};border-color: {{ block.settings.tag_hover_border_color }};
+    transform: translateY(-2px);
+  }
+
+  .ai-product-tags__tag-{{ ai_gen_id }}:focus {
+    outline:2px solid {{ block.settings.tag_focus_color }};
+    outline-offset: 2px;
+  }
+
+  @media screen and (max-width: 749px) {
+    .ai-product-tags-{{ ai_gen_id }} {
+      gap: {{ block.settings.tag_spacing | times: 0.8 }}px;
+      padding: {{ block.settings.container_padding | times: 0.8 }}px;
+    }
+
+    .ai-product-tags__tag-{{ ai_gen_id }} {
+      padding: {{ block.settings.tag_padding_vertical | times: 0.8 }}px {{ block.settings.tag_padding_horizontal | times: 0.8 }}px;
+      font-size: {{ block.settings.tag_font_size | times: 0.9 }}px;
+    }
+
+    .ai-product-tags__title-{{ ai_gen_id }} {
+      font-size: {{ block.settings.title_font_size | times: 0.9 }}px;
+    }
+  }
+{% endstyle %}<div class="ai-product-tags-{{ ai_gen_id }}" {{ block.shopify_attributes }}>
+  {% if block.settings.show_title and block.settings.title != blank %}
+    <h3 class="ai-product-tags__title-{{ ai_gen_id }}">{{ block.settings.title }}</h3>
+  {% endif %}
+
+  {% if block.settings.tag_source == 'current_product' and product %}
+    {% for tag in product.tags limit: block.settings.max_tags %}
+      {% unless block.settings.exclude_tags contains tag %}
+        <a 
+          href="{{ routes.collections_url }}/all/{{ tag | handle }}"
+          class="ai-product-tags__tag-{{ ai_gen_id }}"
+          title="View products tagged with {{ tag }}"
+        >
+          {{ tag }}
+        </a>
+      {% endunless %}
+    {% endfor %}
+  {% elsif block.settings.tag_source == 'collection' and block.settings.selected_collection %}
+    {% assign all_tags = '' %}
+    {% for product_item in block.settings.selected_collection.products %}
+      {% for tag in product_item.tags %}
+        {% unless all_tags contains tag %}
+          {% assign all_tags = all_tags | append: tag | append: ',' %}
+        {% endunless %}
+      {% endfor %}
+    {% endfor %}
+    {% assign unique_tags = all_tags | split: ',' %}
+    {% for tag in unique_tags limit: block.settings.max_tags %}
+      {% if tag != blank %}
+        {% unless block.settings.exclude_tags contains tag %}
+          <a 
+            href="{{ routes.collections_url }}/all/{{ tag | handle }}"
+            class="ai-product-tags__tag-{{ ai_gen_id }}"
+            title="View products tagged with {{ tag }}"
+          >
+            {{ tag }}
+          </a>
+        {% endunless %}
+      {% endif %}
+    {% endfor %}
+  {% elsif block.settings.tag_source == 'custom' and block.settings.custom_tags != blank %}
+    {% assign custom_tag_list = block.settings.custom_tags | split: ',' %}
+    {% for tag in custom_tag_list limit: block.settings.max_tags %}
+      {% assign clean_tag = tag | strip %}
+      {% if clean_tag != blank %}<a 
+          href="{{ routes.collections_url }}/all/{{ clean_tag | handle }}"
+          class="ai-product-tags__tag-{{ ai_gen_id }}"
+          title="View products tagged with {{ clean_tag }}"
+        >
+          {{ clean_tag }}
+        </a>
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+</div>
+
+{% schema %}
+{
+  "name": "Product Tags",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_title",
+      "label": "Show title",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Title",
+      "default": "Product Tags"
+    },
+    {
+      "type": "select",
+      "id": "tag_source",
+      "label": "Tag source",
+      "options": [
+        {
+          "value": "current_product",
+          "label": "Current product"
+        },
+        {
+          "value": "collection",
+          "label": "Collection"
+        },
+        {
+          "value": "custom",
+          "label": "Custom tags"
+        }
+      ],
+      "default": "current_product"
+    },
+    {
+      "type": "collection",
+      "id": "selected_collection",
+      "label": "Collection"
+    },
+    {
+      "type": "textarea",
+      "id": "custom_tags",
+      "label": "Custom tags",
+      "info": "Enter tags separated by commas"
+    },
+    {
+      "type": "range",
+      "id": "max_tags",
+      "min": 5,
+      "max": 50,
+      "step": 5,
+      "label": "Maximum tags to show",
+      "default": 20
+    },
+    {
+      "type": "textarea",
+      "id": "exclude_tags",
+      "label": "Exclude tags",
+      "info": "Enter tags to exclude, separated by commas"
+    },
+    {
+      "type": "header",
+      "content": "Title Style"
+    },
+    {
+      "type": "range",
+      "id": "title_font_size",
+      "min": 12,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "label": "Title font size",
+      "default": 18
+    },
+    {
+      "type": "select",
+      "id": "title_font_weight",
+      "label": "Title font weight",
+      "options": [
+        {
+          "value": "400",
+          "label": "Normal"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        },
+        {
+          "value": "600",
+          "label": "Semi-bold"
+        },
+        {
+          "value": "700",
+          "label": "Bold"
+        }
+      ],
+      "default": "600"
+    },
+    {
+      "type": "select",
+      "id": "title_alignment",
+      "label": "Title alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "color",
+      "id": "title_color",
+      "label": "Title color",
+      "default": "#000000"
+    },
+    {
+      "type": "range",
+      "id": "title_margin_bottom",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "label": "Title bottom margin",
+      "default": 16
+    },
+    {
+      "type": "header",
+      "content": "Tag Style"
+    },
+    {
+      "type": "range",
+      "id": "tag_font_size",
+      "min": 10,
+      "max": 18,
+      "step": 1,
+      "unit": "px",
+      "label": "Tag font size",
+      "default": 14
+    },
+    {
+      "type": "select",
+      "id": "tag_font_weight",
+      "label": "Tag font weight",
+      "options": [
+        {
+          "value": "400",
+          "label": "Normal"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        },
+        {
+          "value": "600",
+          "label": "Semi-bold"
+        }
+      ],
+      "default": "500"
+    },
+    {
+      "type": "select",
+      "id": "tag_text_transform",
+      "label": "Tag text transform",
+      "options": [
+        {
+          "value": "none",
+          "label": "None"
+        },
+        {
+          "value": "uppercase",
+          "label": "Uppercase"
+        },
+        {
+          "value": "lowercase",
+          "label": "Lowercase"
+        },
+        {
+          "value": "capitalize",
+          "label": "Capitalize"
+        }
+      ],
+      "default": "none"
+    },
+    {
+      "type": "range",
+      "id": "tag_padding_horizontal",
+      "min": 8,
+      "max": 24,
+      "step": 2,
+      "unit": "px",
+      "label": "Tag horizontal padding",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "tag_padding_vertical",
+      "min": 4,
+      "max": 16,
+      "step": 2,
+      "unit": "px",
+      "label": "Tag vertical padding",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "tag_border_radius",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "label": "Tag border radius",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "tag_border_width",
+      "min": 0,
+      "max": 4,
+      "step": 1,
+      "unit": "px",
+      "label": "Tag border width",
+      "default": 1
+    },
+    {
+      "type": "range",
+      "id": "tag_spacing",
+      "min": 4,
+      "max": 20,
+      "step": 2,
+      "unit": "px",
+      "label": "Space between tags",
+      "default": 8
+    },
+    {
+      "type": "header",
+      "content": "Tag Colors"
+    },
+    {
+      "type": "color",
+      "id": "tag_background_color",
+      "label": "Tag background",
+      "default": "#f5f5f5"
+    },
+    {
+      "type": "color",
+      "id": "tag_text_color",
+      "label": "Tag text",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "tag_border_color",
+      "label": "Tag border",
+      "default": "#e6e6e6"
+    },
+    {
+      "type": "color",
+      "id": "tag_hover_background_color",
+      "label": "Tag hover background",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "tag_hover_text_color",
+      "label": "Tag hover text",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "tag_hover_border_color",
+      "label": "Tag hover border",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "tag_focus_color",
+      "label": "Tag focus outline",
+      "default": "#000f9f"
+    },
+    {
+      "type": "header",
+      "content": "Container Style"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Container background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "container_padding",
+      "min": 0,
+      "max": 40,
+      "step": 4,
+      "unit": "px",
+      "label": "Container padding",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "container_border_radius",
+      "min": 0,
+      "max": 20,
+      "step": 2,
+      "unit": "px",
+      "label": "Container border radius",
+      "default": 8
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product Tags"
+    }
+  ]
+}
+{% endschema %}

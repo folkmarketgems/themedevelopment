@@ -1,0 +1,202 @@
+{% doc %}
+  @prompt
+    Create a compact, single-row set of inquiry buttons for Shopify product pages that stay in one line on both mobile and desktop. Include:
+    
+    A WhatsApp button linking to:
+    https://wa.me/+923268999919?text=Hello, I%20would%20like%20to%20buy%20this%20product:%20{{ product.title | url_escape }}%20{{ shop.url }}{{ product.url }}
+    
+    Text: "Consult on WhatsApp"
+    
+    Color: WhatsApp green (#25D366)
+    
+    An Email button linking to:
+    mailto:info@folkmarketgems.com?subject=Inquiry%20about%20{{ product.title | url_escape }}&body=Hello,%20I%20am%20interested%20in%20{{ product.title | url_escape }}%20{{ shop.url }}{{ product.url }}
+    
+    Text: "Email Inquiry"
+    
+    Color: Blue (#007BFF)
+    
+    Requirements:
+    
+    Buttons must stay in one row (no stacking on mobile).
+    
+    Small and compact:
+    
+    Padding: 6px 10px
+    
+    Font size: 15px
+    
+    Rounded corners: 8px
+    
+    Use flexbox for alignment with a small gap (8px).
+    
+    Hover effect: opacity: 0.7.
+    
+    Ensure text doesn’t wrap (white-space: nowrap).
+    
+    Provide the HTML + CSS code ready for Shopify (Liquid variables included) - All links should open in new window
+
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .inquiry-buttons-{{ ai_gen_id }} {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: {{ block.settings.margin_top }}px 0 {{ block.settings.margin_bottom }}px0;
+  }
+
+  .inquiry-button-{{ ai_gen_id }} {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 500;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: opacity 0.2s ease;
+    min-height: 36px;
+  }
+
+  .inquiry-button-{{ ai_gen_id }}:hover {
+    opacity: 0.7;
+  }
+
+  .inquiry-button-{{ ai_gen_id }} svg {
+    margin-right: 6px;
+    width: 18px;
+    height: 18px;
+  }
+
+  .whatsapp-button-{{ ai_gen_id }} {
+    background-color: {{ block.settings.whatsapp_color }};
+    color: white;
+  }
+
+  .email-button-{{ ai_gen_id }} {
+    background-color: {{ block.settings.email_color }};
+    color: white;
+  }
+
+  @media screen and (max-width: 480px) {
+    .inquiry-button-{{ ai_gen_id }} {
+      font-size: 13px;
+      padding: 6px 8px;
+    }
+    
+    .inquiry-button-{{ ai_gen_id }} svg {
+      width: 16px;
+      height: 16px;
+    }
+  }
+{% endstyle %}
+
+<div class="inquiry-buttons-{{ ai_gen_id }}" {{ block.shopify_attributes }}>
+  <a 
+    href="https://wa.me/{{ block.settings.whatsapp_number }}?text=Hello, I%20would%20like%20to%20buy%20this%20product:%20{{ product.title | url_escape }}%20{{ shop.url }}{{ product.url }}" 
+    class="inquiry-button-{{ ai_gen_id }} whatsapp-button-{{ ai_gen_id }}"
+    target="_blank"
+    rel="noopener"
+  >
+    <svg viewBox="0 0 24 24" fill="currentColor">
+      <path d="M17.498 14.382c-.301-.15-1.767-.867-2.04-.966-.273-.101-.473-.15-.673.15-.197.295-.771.964-.944 1.162-.175.195-.349.21-.646.075-.3-.15-1.263-.465-2.403-1.485-.888-.795-1.484-1.77-1.66-2.07-.174-.3-.019-.465.13-.615.136-.135.301-.345.451-.523.146-.181.194-.301.297-.496.1-.21.049-.375-.025-.524-.075-.15-.672-1.62-.922-2.206-.24-.584-.487-.51-.672-.51-.172-.015-.371-.015-.571-.015-.2 0-.523.074-.797.359-.273.3-1.045 1.02-1.045 2.475s1.07 2.865 1.219 3.075c.149.195 2.105 3.195 5.1 4.485.714.3 1.27.48 1.704.629.714.227 1.365.195 1.88.121.574-.091 1.767-.721 2.016-1.426.255-.705.255-1.29.18-1.425-.074-.135-.27-.21-.57-.345m-5.446 7.443h-.016c-1.77 0-3.524-.48-5.055-1.38l-.36-.214-3.75.975 1.005-3.645-.239-.375c-.99-1.576-1.516-3.391-1.516-5.26 0-5.445 4.455-9.885 9.942-9.885 2.654 0 5.145 1.035 7.021 2.911.875 1.859 2.909 4.35 2.909 6.99-.004 5.444-4.46 9.885-9.935 9.885M20.52 3.449C18.24 1.245 15.24 0 12.045 0 5.463 0 .104 5.334.101 11.893c0 2.096.549 4.14 1.595 5.945L0 24l6.335-1.652c1.746.943 3.71 1.444 5.71 1.447h.006c6.585 0 11.946-5.336 11.949-11.8960-3.176-1.24-6.165-3.495-8.411"/>
+    </svg>
+    {{ block.settings.whatsapp_text }}
+  </a><a 
+    href="mailto:{{ block.settings.email_address }}?subject=Inquiry%20about%20{{ product.title | url_escape }}&body=Hello,%20I%20am%20interested%20in%20{{ product.title | url_escape }}%20{{ shop.url }}{{ product.url }}" 
+    class="inquiry-button-{{ ai_gen_id }} email-button-{{ ai_gen_id }}"
+    target="_blank"
+    rel="noopener"
+  >
+    <svg viewBox="0 0 24 24" fill="currentColor">
+      <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+    </svg>
+    {{ block.settings.email_text }}
+  </a>
+</div>
+
+{% schema %}
+{
+  "name": "Product Inquiry Buttons",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "WhatsApp Settings"
+    },
+    {
+      "type": "text",
+      "id": "whatsapp_number",
+      "label": "WhatsApp Number",
+      "info": "Include country code without + (e.g., 923268999919)",
+      "default": "923268999919"
+    },
+    {
+      "type": "text",
+      "id": "whatsapp_text",
+      "label": "WhatsApp Button Text",
+      "default": "Consult on WhatsApp"
+    },
+    {
+      "type": "color",
+      "id": "whatsapp_color",
+      "label": "WhatsApp Button Color",
+      "default": "#25D366"
+    },
+    {
+      "type": "header",
+      "content": "Email Settings"
+    },
+    {
+      "type": "text",
+      "id": "email_address",
+      "label": "Email Address",
+      "default": "info@folkmarketgems.com"
+    },
+    {
+      "type": "text",
+      "id": "email_text",
+      "label": "Email Button Text",
+      "default": "Email Inquiry"
+    },
+    {
+      "type": "color",
+      "id": "email_color",
+      "label": "Email Button Color",
+      "default": "#007BFF"
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "margin_top",
+      "min": 0,
+      "max": 40,
+      "step": 4,
+      "unit": "px",
+      "label": "Top Margin",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "margin_bottom",
+      "min": 0,
+      "max": 40,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom Margin",
+      "default": 16
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product Inquiry Buttons"
+    }
+  ]
+}
+{% endschema %}

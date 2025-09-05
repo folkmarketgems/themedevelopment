@@ -1,0 +1,383 @@
+{% doc %}
+  @prompt
+    Create a responsive breadcrumb navigation component for blog article pages that displays the path like Home > Blog > Blog Post Name. The breadcrumbs should dynamically pull blog post information from Shopify's article and blog objects, include proper CSS styling for mobile and desktop, and incorporate structured data markup (JSON-LD) for SEO benefits. Make it customizable through theme settings.
+
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-breadcrumb-{{ ai_gen_id }} {
+    padding: {{ block.settings.padding_top }}px 0 {{ block.settings.padding_bottom }}px;
+    font-size: {{ block.settings.font_size }}px;
+    color: {{ block.settings.text_color }};
+    font-family: {{ block.settings.font_family.family }}, {{ block.settings.font_family.fallback_families }};
+  }
+
+  .ai-breadcrumb-list-{{ ai_gen_id }} {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: {{ block.settings.item_spacing }}px;
+  }
+
+  .ai-breadcrumb-item-{{ ai_gen_id }} {
+    display: flex;
+    align-items: center;
+    gap: {{ block.settings.item_spacing }}px;
+  }
+
+  .ai-breadcrumb-link-{{ ai_gen_id }} {
+    color: {{ block.settings.link_color }};
+    text-decoration: none;
+    transition: color 0.3s ease;
+  }
+
+  .ai-breadcrumb-link-{{ ai_gen_id }}:hover {
+    color: {{ block.settings.link_hover_color }};text-decoration: {{ block.settings.link_hover_decoration }};
+  }
+
+  .ai-breadcrumb-current-{{ ai_gen_id }} {
+    color: {{ block.settings.current_color }};
+    font-weight: {{ block.settings.current_font_weight }};
+  }
+
+  .ai-breadcrumb-separator-{{ ai_gen_id }} {
+    color: {{ block.settings.separator_color }};
+    font-size: {{ block.settings.separator_size }}px;
+    user-select: none;
+  }
+
+  @media screen and (max-width: 749px) {
+    .ai-breadcrumb-{{ ai_gen_id }} {
+      font-size: {{ block.settings.mobile_font_size }}px;
+      padding: {{ block.settings.mobile_padding_top }}px 0 {{ block.settings.mobile_padding_bottom }}px;
+    }
+
+    .ai-breadcrumb-list-{{ ai_gen_id }} {
+      gap: {{ block.settings.mobile_item_spacing }}px;
+    }
+
+    .ai-breadcrumb-item-{{ ai_gen_id }} {
+      gap: {{ block.settings.mobile_item_spacing }}px;
+    }
+
+    .ai-breadcrumb-separator-{{ ai_gen_id }} {
+      font-size: {{ block.settings.mobile_separator_size }}px;
+    }
+
+    {% if block.settings.hide_home_mobile %}
+      .ai-breadcrumb-item-{{ ai_gen_id }}:first-child {
+        display: none;
+      }.ai-breadcrumb-item-{{ ai_gen_id }}:nth-child(2) .ai-breadcrumb-separator-{{ ai_gen_id }} {
+        display: none;
+      }
+    {% endif %}
+  }
+{% endstyle %}
+
+<nav class="ai-breadcrumb-{{ ai_gen_id }}" aria-label="Breadcrumb" {{ block.shopify_attributes }}>
+  <ol class="ai-breadcrumb-list-{{ ai_gen_id }}"><li class="ai-breadcrumb-item-{{ ai_gen_id }}">
+      <a href="{{ routes.root_url }}" class="ai-breadcrumb-link-{{ ai_gen_id }}">
+        {{ block.settings.home_text }}
+      </a>
+    </li>
+
+    {% if blog %}
+      <li class="ai-breadcrumb-item-{{ ai_gen_id }}">
+        <span class="ai-breadcrumb-separator-{{ ai_gen_id }}" aria-hidden="true">{{ block.settings.separator }}</span>
+        {% if article %}
+          <a href="{{ blog.url }}" class="ai-breadcrumb-link-{{ ai_gen_id }}">
+            {{ blog.title }}
+          </a>
+        {% else %}
+          <span class="ai-breadcrumb-current-{{ ai_gen_id }}" aria-current="page">
+            {{ blog.title }}
+          </span>
+        {% endif %}
+      </li>
+    {% endif %}
+
+    {% if article %}
+      <li class="ai-breadcrumb-item-{{ ai_gen_id }}">
+        <span class="ai-breadcrumb-separator-{{ ai_gen_id }}" aria-hidden="true">{{ block.settings.separator }}</span>
+        <span class="ai-breadcrumb-current-{{ ai_gen_id }}" aria-current="page">
+          {% if block.settings.truncate_title and article.title.size > block.settings.max_title_length %}
+            {{ article.title | truncate: block.settings.max_title_length }}
+          {% else %}
+            {{ article.title }}
+          {% endif %}
+        </span>
+      </li>
+    {% endif %}
+  </ol>
+</nav>
+
+{% if block.settings.enable_structured_data %}
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "{{ block.settings.home_text | escape }}",
+        "item": "{{ shop.secure_url }}"
+      }{% if blog %}
+        ,{
+          "@type": "ListItem",
+          "position": 2,
+          "name": "{{ blog.title | escape }}",
+          "item": "{{ shop.secure_url }}{{ blog.url }}"
+        }
+      {% endif %}
+      {% if article %}
+        ,{
+          "@type": "ListItem",
+          "position": 3,
+          "name": "{{ article.title | escape }}",
+          "item": "{{ shop.secure_url }}{{ article.url }}"
+        }
+      {% endif %}
+    ]
+  }
+  </script>
+{% endif %}
+
+{% schema %}
+{
+  "name": "Blog breadcrumbs",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "home_text",
+      "label": "Home text",
+      "default": "Home"
+    },
+    {
+      "type": "text",
+      "id": "separator",
+      "label": "Separator",
+      "default": ">"
+    },
+    {
+      "type": "checkbox",
+      "id": "truncate_title",
+      "label": "Truncate long titles",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "max_title_length",
+      "min": 20,
+      "max": 100,
+      "step": 5,
+      "label": "Maximum title length",
+      "default": 50
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_structured_data",
+      "label": "Enable structured data",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Typography"
+    },
+    {
+      "type": "font_picker",
+      "id": "font_family",
+      "label": "Font",
+      "default": "inter_n4"
+    },
+    {
+      "type": "range",
+      "id": "font_size",
+      "min": 10,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "label": "Font size",
+      "default": 14
+    },
+    {
+      "type": "range",
+      "id": "mobile_font_size",
+      "min": 10,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Mobile font size",
+      "default": 12
+    },
+    {
+      "type": "select",
+      "id": "current_font_weight",
+      "label": "Current page weight",
+      "options": [
+        {"value": "400", "label": "Normal"},
+        {"value": "500", "label": "Medium"},
+        {"value": "600", "label": "Semibold"},
+        {"value": "700", "label": "Bold"}
+      ],
+      "default": "500"
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#666666"
+    },
+    {
+      "type": "color",
+      "id": "link_color",
+      "label": "Link color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "link_hover_color",
+      "label": "Link hover color",
+      "default": "#333333"
+    },
+    {
+      "type": "color",
+      "id": "current_color",
+      "label": "Current page color",
+      "default": "#666666"
+    },
+    {
+      "type": "color",
+      "id": "separator_color",
+      "label": "Separator color",
+      "default": "#cccccc"
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 60,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 60,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "item_spacing",
+      "min": 4,
+      "max": 20,
+      "step": 2,
+      "unit": "px",
+      "label": "Item spacing",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "separator_size",
+      "min": 10,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Separator size",
+      "default": 14
+    },
+    {
+      "type": "header",
+      "content": "Mobile settings"
+    },
+    {
+      "type": "range",
+      "id": "mobile_padding_top",
+      "min": 0,
+      "max": 40,
+      "step": 4,
+      "unit": "px",
+      "label": "Mobile top padding",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "mobile_padding_bottom",
+      "min": 0,
+      "max": 40,
+      "step": 4,
+      "unit": "px",
+      "label": "Mobile bottom padding",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "mobile_item_spacing",
+      "min": 2,
+      "max": 12,
+      "step": 2,
+      "unit": "px",
+      "label": "Mobile item spacing",
+      "default": 6
+    },
+    {
+      "type": "range",
+      "id": "mobile_separator_size",
+      "min": 8,
+      "max": 16,
+      "step": 1,
+      "unit": "px",
+      "label": "Mobile separator size",
+      "default": 12
+    },
+    {
+      "type": "checkbox",
+      "id": "hide_home_mobile",
+      "label": "Hide home on mobile",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Link style"
+    },
+    {
+      "type": "select",
+      "id": "link_hover_decoration",
+      "label": "Hover decoration",
+      "options": [
+        {"value": "none", "label": "None"},
+        {"value": "underline", "label": "Underline"}
+      ],
+      "default": "underline"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Blog breadcrumbs"
+    }
+  ],
+  "tag": null
+}
+{% endschema %}

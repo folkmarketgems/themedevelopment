@@ -1,0 +1,1309 @@
+{% doc %}
+  @prompt
+    Create a responsive section of circular or square menu options like collection list, add options to add collection from collection list with link image and additional link outside the site with adding image option on menu item, add options to display selecting columns on desktop 1 to 16 and on mobile 1 to 6 in one row with additional show in the below rows if applicable, add option of carousel enable or disable esepcially in mobile with showing minimum 4 in front , add page or full width option, add overlay or below or above menu title and button options separately, design responsive button and menu title with selecting optional title or button, add background color scheme options, add padding options / spacing control options, make it mobile view and desktop view optimized, add lazy load, make SEO friendly, use minimum css, keep it almost static
+
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-menu-grid-{{ ai_gen_id }} {
+    background-color: rgb(var(--color-background));
+    padding: {{ block.settings.padding_top }}px 0 {{ block.settings.padding_bottom }}px;
+  }
+
+  .ai-menu-grid-container-{{ ai_gen_id }} {
+    {% if block.settings.layout == 'page' %}
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    {% else %}
+      width: 100%;padding: 0 20px;
+    {% endif %}
+  }
+
+  .ai-menu-grid-wrapper-{{ ai_gen_id }} {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .ai-menu-grid-list-{{ ai_gen_id }} {
+    display: grid;
+    grid-template-columns: repeat({{ block.settings.columns_desktop }}, 1fr);
+    gap: {{ block.settings.grid_gap }}px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    {% if block.settings.enable_carousel %}
+      transition: transform 0.3s ease;
+    {% endif %}
+  }
+
+  .ai-menu-grid-item-{{ ai_gen_id }} {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    text-align: center;}
+
+  .ai-menu-grid-link-{{ ai_gen_id }} {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.2s ease;
+  }
+
+  .ai-menu-grid-link-{{ ai_gen_id }}:hover {
+    transform: translateY(-2px);
+  }
+
+  .ai-menu-grid-image-wrapper-{{ ai_gen_id }} {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    margin-bottom: 12px;
+    overflow: hidden;{% if block.settings.menu_shape == 'circle' %}
+      border-radius: 50%;
+    {% else %}
+      border-radius: {{ block.settings.border_radius }}px;
+    {% endif %}
+  }
+
+  .ai-menu-grid-image-{{ ai_gen_id }} {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .ai-menu-grid-placeholder-{{ ai_gen_id }} {
+    width: 100%;
+    height: 100%;
+    background-color: #f4f4f4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ai-menu-grid-placeholder-{{ ai_gen_id }} svg {
+    width: 40%;
+    height: 40%;
+    opacity: 0.3;
+  }
+
+  .ai-menu-grid-overlay-{{ ai_gen_id }} {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, {{ block.settings.overlay_opacity | divided_by: 100.0 }});
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .ai-menu-grid-link-{{ ai_gen_id }}:hover .ai-menu-grid-overlay-{{ ai_gen_id }} {
+    opacity: 1;
+  }
+
+  .ai-menu-grid-title-{{ ai_gen_id }} {
+    font-size: {{ block.settings.title_size }}px;
+    font-weight: 600;
+    margin: 0 0 8px;
+    color: rgb(var(--color-foreground));
+  }
+
+  .ai-menu-grid-overlay-title-{{ ai_gen_id }} {
+    font-size: {{ block.settings.title_size }}px;
+    font-weight: 600;
+    margin: 0 0 8px;
+    color: white;
+  }
+
+  .ai-menu-grid-button-{{ ai_gen_id }} {
+    display: inline-block;
+    padding: 8px 16px;
+    background-color: rgb(var(--color-button));
+    color: rgb(var(--color-button-text));
+    border: none;
+    border-radius: {{ block.settings.button_border_radius }}px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+  }
+
+  .ai-menu-grid-button-{{ ai_gen_id }}:hover {
+    background-color: rgb(var(--color-button-hover));
+    color: rgb(var(--color-button-text));
+  }
+
+  .ai-menu-grid-overlay-button-{{ ai_gen_id }} {
+    display: inline-block;
+    padding: 8px 16px;
+    background-color: white;
+    color: black;
+    border: none;
+    border-radius: {{ block.settings.button_border_radius }}px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+
+  .ai-menu-grid-overlay-button-{{ ai_gen_id }}:hover {
+    background-color: rgba(255, 255, 255, 0.9);
+    color: black;
+  }
+
+  .ai-menu-grid-carousel-nav-{{ ai_gen_id }} {
+    display: none;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  .ai-menu-grid-nav-button-{{ ai_gen_id }} {
+    width: 40px;
+    height: 40px;
+    border:1px solid rgb(var(--color-border));
+    background: rgb(var(--color-background));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .ai-menu-grid-nav-button-{{ ai_gen_id }}:hover {
+    background: rgb(var(--color-foreground));
+    color: rgb(var(--color-background));
+  }
+
+  .ai-menu-grid-nav-button-{{ ai_gen_id }}:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  @media screen and (max-width: 749px) {
+    .ai-menu-grid-list-{{ ai_gen_id }} {
+      grid-template-columns: repeat({{ block.settings.columns_mobile }}, 1fr);
+      gap: {{ block.settings.grid_gap | times: 0.8 }}px;
+    }
+
+    {% if block.settings.enable_carousel %}
+      .ai-menu-grid-wrapper-{{ ai_gen_id }} {
+        overflow-x: auto;scrollbar-width: none;
+        -ms-overflow-style: none;
+      }
+
+      .ai-menu-grid-wrapper-{{ ai_gen_id }}::-webkit-scrollbar {
+        display: none;
+      }
+
+      .ai-menu-grid-list-{{ ai_gen_id }} {
+        grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+        width: max-content;
+        min-width: 100%;
+      }
+
+      .ai-menu-grid-carousel-nav-{{ ai_gen_id }} {
+        display: flex;
+      }
+    {% endif %}
+
+    .ai-menu-grid-title-{{ ai_gen_id }},
+    .ai-menu-grid-overlay-title-{{ ai_gen_id }} {
+      font-size: {{ block.settings.title_size | times: 0.9 }}px;
+    }
+
+    .ai-menu-grid-container-{{ ai_gen_id }} {
+      padding: 0 15px;
+    }
+  }
+
+  @media screen and (max-width: 480px) {
+    .ai-menu-grid-title-{{ ai_gen_id }},
+    .ai-menu-grid-overlay-title-{{ ai_gen_id }} {
+      font-size: {{ block.settings.title_size | times: 0.8 }}px;
+    }
+  }
+{% endstyle %}
+
+<div 
+  class="ai-menu-grid-{{ ai_gen_id }} color-{{ block.settings.color_scheme }}"
+  {{ block.shopify_attributes }}
+>
+  <div class="ai-menu-grid-container-{{ ai_gen_id }}">
+    <menu-grid-{{ ai_gen_id }} class="ai-menu-grid-wrapper-{{ ai_gen_id }}">
+      <ul class="ai-menu-grid-list-{{ ai_gen_id }}">
+        {% for i in (1..16) %}
+          {% liquid
+            assign collection_key = 'collection_' | append: i
+            assign external_link_key = 'external_link_' | append: i
+            assign external_image_key = 'external_image_' | append: i
+            assign title_key = 'title_' | append: i
+            assign button_text_key = 'button_text_' | append: i
+            assign show_title_key = 'show_title_' | append: i
+            assign show_button_key = 'show_button_' | append: i
+
+            assign collection = block.settings[collection_key]
+            assign external_link = block.settings[external_link_key]
+            assign external_image = block.settings[external_image_key]
+            assign title = block.settings[title_key]
+            assign button_text = block.settings[button_text_key]
+            assign show_title = block.settings[show_title_key]
+            assign show_button = block.settings[show_button_key]
+
+            assign has_content = false
+            if collection != blank or external_link != blank
+              assign has_content = true
+            endif
+          %}
+
+          {% if has_content %}
+            <li class="ai-menu-grid-item-{{ ai_gen_id }}">
+              {% liquid
+                assign link_url = ''
+                assign image = null
+                assign item_title = ''
+
+                if collection != blank
+                  assign link_url = collection.url
+                  assign image = collection.featured_image
+                  assign item_title = collection.title
+                else
+                  assign link_url = external_link
+                  assign image = external_image
+                  assign item_title = title
+                endif
+
+                if title != blank
+                  assign item_title = title
+                endif
+              %}
+
+              <a href="{{ link_url }}" class="ai-menu-grid-link-{{ ai_gen_id }}"><div class="ai-menu-grid-image-wrapper-{{ ai_gen_id }}">
+                  {% if image %}
+                    <img
+                      src="{{ image | image_url: width: 300 }}"
+                      alt="{{ image.alt | default: item_title | escape }}"
+                      class="ai-menu-grid-image-{{ ai_gen_id }}"
+                loading="lazy"
+                width="300"
+                      height="300"
+                    >
+                  {% else %}
+                    <div class="ai-menu-grid-placeholder-{{ ai_gen_id }}">
+                      {{ 'collection-1' | placeholder_svg_tag }}
+                    </div>
+                  {% endif %}
+
+                  {% if block.settings.title_position == 'overlay' or block.settings.button_position == 'overlay' %}
+                    <div class="ai-menu-grid-overlay-{{ ai_gen_id }}">
+                      {% if block.settings.title_position == 'overlay' and show_title and item_title != blank %}
+                        <h3 class="ai-menu-grid-overlay-title-{{ ai_gen_id }}">{{ item_title }}</h3>
+                      {% endif %}
+                      {% if block.settings.button_position == 'overlay' and show_button and button_text != blank %}
+                        <span class="ai-menu-grid-overlay-button-{{ ai_gen_id }}">{{ button_text }}</span>
+                      {% endif %}
+                    </div>
+                  {% endif %}
+                </div>
+
+                {% if block.settings.title_position == 'below' and show_title and item_title != blank %}
+                  <h3 class="ai-menu-grid-title-{{ ai_gen_id }}">{{ item_title }}</h3>
+                {% endif %}
+
+                {% if block.settings.button_position == 'below' and show_button and button_text != blank %}
+                  <span class="ai-menu-grid-button-{{ ai_gen_id }}">{{ button_text }}</span>
+                {% endif %}
+              </a>
+
+              {% if block.settings.title_position == 'above' and show_title and item_title != blank %}
+                <h3 class="ai-menu-grid-title-{{ ai_gen_id }}" style="order: -1; margin-bottom: 12px;">{{ item_title }}</h3>
+              {% endif %}
+
+              {% if block.settings.button_position == 'above' and show_button and button_text != blank %}
+                <a href="{{ link_url }}" class="ai-menu-grid-button-{{ ai_gen_id }}" style="order: -1; margin-bottom: 12px;">{{ button_text }}</a>
+              {% endif %}
+            </li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+
+      {% if block.settings.enable_carousel %}
+        <div class="ai-menu-grid-carousel-nav-{{ ai_gen_id }}">
+          <button class="ai-menu-grid-nav-button-{{ ai_gen_id }}" data-direction="prev" aria-label="Previous">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M1012L6 8l4-4v8z"/>
+            </svg>
+          </button>
+          <button class="ai-menu-grid-nav-button-{{ ai_gen_id }}" data-direction="next" aria-label="Next">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M6 4l4 4-4 4V4z"/>
+            </svg>
+          </button>
+        </div>
+      {% endif %}
+    </menu-grid-{{ ai_gen_id }}>
+  </div>
+</div>
+
+{% if block.settings.enable_carousel %}
+<script>
+(function() {
+  class MenuGrid{{ ai_gen_id }} extends HTMLElement {
+    constructor() {
+      super();
+      this.currentIndex = 0;
+      this.itemsPerView = 4;
+    }
+
+    connectedCallback() {
+      this.list = this.querySelector('.ai-menu-grid-list-{{ ai_gen_id }}');
+      this.items = this.querySelectorAll('.ai-menu-grid-item-{{ ai_gen_id }}');
+      this.prevButton = this.querySelector('[data-direction="prev"]');
+      this.nextButton = this.querySelector('[data-direction="next"]');
+
+      if (this.items.length <= this.itemsPerView) {
+        this.querySelector('.ai-menu-grid-carousel-nav-{{ ai_gen_id }}').style.display = 'none';
+        return;
+      }
+
+      this.setupEventListeners();
+      this.updateButtons();
+    }
+
+    setupEventListeners() {
+      this.prevButton.addEventListener('click', () => this.slide('prev'));
+      this.nextButton.addEventListener('click', () => this.slide('next'));
+
+      let startX = 0;
+      let scrollLeft = 0;
+
+      this.addEventListener('touchstart', (e) => {
+        startX = e.touches[0].pageX;
+        scrollLeft = this.scrollLeft;
+      });
+
+      this.addEventListener('touchmove', (e) => {
+        const x = e.touches[0].pageX;
+        const walk = (x - startX) * 2;
+        this.scrollLeft = scrollLeft - walk;
+      });
+    }
+
+    slide(direction) {
+      const maxIndex = Math.max(0, this.items.length - this.itemsPerView);
+      
+      if (direction === 'next' && this.currentIndex < maxIndex) {
+        this.currentIndex++;
+      } else if (direction === 'prev' && this.currentIndex > 0) {
+        this.currentIndex--;
+      }
+
+      const itemWidth = this.items[0].offsetWidth;
+      const gap = parseInt(getComputedStyle(this.list).gap);
+      const scrollAmount = (itemWidth + gap) * this.currentIndex;
+      
+      this.scrollTo({
+        left: scrollAmount,
+        behavior: 'smooth'
+      });
+
+      this.updateButtons();
+    }
+
+    updateButtons() {
+      const maxIndex = Math.max(0, this.items.length - this.itemsPerView);
+      this.prevButton.disabled = this.currentIndex === 0;
+      this.nextButton.disabled = this.currentIndex >= maxIndex;
+    }
+  }
+
+  customElements.define('menu-grid-{{ ai_gen_id }}', MenuGrid{{ ai_gen_id }});
+})();
+</script>
+{% endif %}
+
+{% schema %}
+{
+  "name": "Menu Grid",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Container width",
+      "options": [
+        {
+          "value": "page",
+          "label": "Page width"
+        },
+        {
+          "value": "full",
+          "label": "Full width"
+        }
+      ],
+      "default": "page"
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "min": 1,
+      "max": 16,
+      "step": 1,
+      "label": "Columns on desktop",
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "columns_mobile",
+      "min": 1,
+      "max": 6,
+      "step": 1,
+      "label": "Columns on mobile",
+      "default": 2
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_carousel",
+      "label": "Enable carousel on mobile",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "grid_gap",
+      "min": 5,
+      "max": 50,
+      "step": 5,
+      "unit": "px",
+      "label": "Grid gap",
+      "default": 20
+    },
+    {
+      "type": "header",
+      "content": "Style"
+    },
+    {
+      "type": "select",
+      "id": "menu_shape",
+      "label": "Menu item shape",
+      "options": [
+        {
+          "value": "square",
+          "label": "Square"
+        },
+        {
+          "value": "circle",
+          "label": "Circle"
+        }
+      ],
+      "default": "circle"
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "label": "Border radius",
+      "default": 8
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Title Settings"
+    },
+    {
+      "type": "select",
+      "id": "title_position",
+      "label": "Title position",
+      "options": [
+        {
+          "value": "above",
+          "label": "Above image"
+        },
+        {
+          "value": "below",
+          "label": "Below image"
+        },
+        {
+          "value": "overlay",
+          "label": "Overlay on image"
+        }
+      ],
+      "default": "below"
+    },
+    {
+      "type": "range",
+      "id": "title_size",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "label": "Title size",
+      "default": 16
+    },
+    {
+      "type": "header",
+      "content": "Button Settings"
+    },
+    {
+      "type": "select",
+      "id": "button_position",
+      "label": "Button position",
+      "options": [
+        {
+          "value": "above",
+          "label": "Above image"
+        },
+        {
+          "value": "below",
+          "label": "Below image"
+        },
+        {
+          "value": "overlay",
+          "label": "Overlay on image"
+        }
+      ],
+      "default": "overlay"
+    },
+    {
+      "type": "range",
+      "id": "button_border_radius",
+      "min": 0,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Button border radius",
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "min": 0,
+      "max": 80,
+      "step": 5,
+      "unit": "%",
+      "label": "Overlay opacity",
+      "default": 40
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 40
+    },
+    {
+      "type": "header",
+      "content": "Menu Item1"
+    },
+    {
+      "type": "collection",
+      "id": "collection_1",
+      "label": "Collection"
+    },
+    {
+      "type": "url",
+      "id": "external_link_1",
+      "label": "External link"
+    },
+    {
+      "type": "image_picker",
+      "id": "external_image_1",
+      "label": "External link image"
+    },
+    {
+      "type": "text",
+      "id": "title_1",
+      "label": "Custom title"
+    },
+    {
+      "type": "text",
+      "id": "button_text_1",
+      "label": "Button text",
+      "default": "Shop Now"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_title_1",
+      "label": "Show title",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_button_1",
+      "label": "Show button",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Menu Item 2"
+    },
+    {
+      "type": "collection",
+      "id": "collection_2",
+      "label": "Collection"
+    },
+    {
+      "type": "url",
+      "id": "external_link_2",
+      "label": "External link"
+    },
+    {
+      "type": "image_picker",
+      "id": "external_image_2",
+      "label": "External link image"
+    },
+    {
+      "type": "text",
+      "id": "title_2",
+      "label": "Custom title"
+    },
+    {
+      "type": "text",
+      "id": "button_text_2",
+      "label": "Button text",
+      "default": "Shop Now"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_title_2",
+      "label": "Show title",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_button_2",
+      "label": "Show button",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Menu Item 3"
+    },
+    {
+      "type": "collection",
+      "id": "collection_3",
+      "label": "Collection"
+    },
+    {
+      "type": "url",
+      "id": "external_link_3",
+      "label": "External link"
+    },
+    {
+      "type": "image_picker",
+      "id": "external_image_3",
+      "label": "External link image"
+    },
+    {
+      "type": "text",
+      "id": "title_3",
+      "label": "Custom title"
+    },
+    {
+      "type": "text",
+      "id": "button_text_3",
+      "label": "Button text",
+      "default": "Shop Now"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_title_3",
+      "label": "Show title",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_button_3",
+      "label": "Show button",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Menu Item 4"
+    },
+    {
+      "type": "collection",
+      "id": "collection_4",
+      "label": "Collection"
+    },
+    {
+      "type": "url",
+      "id": "external_link_4",
+      "label": "External link"
+    },
+    {
+      "type": "image_picker",
+      "id": "external_image_4",
+      "label": "External link image"
+    },
+    {
+      "type": "text",
+      "id": "title_4",
+      "label": "Custom title"
+    },
+    {
+      "type": "text",
+      "id": "button_text_4",
+      "label": "Button text",
+      "default": "Shop Now"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_title_4",
+      "label": "Show title",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_button_4",
+      "label": "Show button",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Menu Item 5"
+    },
+    {
+      "type": "collection",
+      "id": "collection_5",
+      "label": "Collection"
+    },
+    {
+      "type": "url",
+      "id": "external_link_5",
+      "label": "External link"
+    },
+    {
+      "type": "image_picker",
+      "id": "external_image_5",
+      "label": "External link image"
+    },
+    {
+      "type": "text",
+      "id": "title_5",
+      "label": "Custom title"
+    },
+    {
+      "type": "text",
+      "id": "button_text_5",
+      "label": "Button text",
+      "default": "Shop Now"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_title_5",
+      "label": "Show title",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_button_5",
+      "label": "Show button",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Menu Item 6"
+    },
+    {
+      "type": "collection",
+      "id": "collection_6",
+      "label": "Collection"
+    },
+    {
+      "type": "url",
+      "id": "external_link_6",
+      "label": "External link"
+    },
+    {
+      "type": "image_picker",
+      "id": "external_image_6",
+      "label": "External link image"
+    },
+    {
+      "type": "text",
+      "id": "title_6",
+      "label": "Custom title"
+    },
+    {
+      "type": "text",
+      "id": "button_text_6",
+      "label": "Button text",
+      "default": "Shop Now"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_title_6",
+      "label": "Show title",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_button_6",
+      "label": "Show button",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Menu Item 7"
+    },
+    {
+      "type": "collection",
+      "id": "collection_7",
+      "label": "Collection"
+    },
+    {
+      "type": "url",
+      "id": "external_link_7",
+      "label": "External link"
+    },
+    {
+      "type": "image_picker",
+      "id": "external_image_7",
+      "label": "External link image"
+    },
+    {
+      "type": "text",
+      "id": "title_7",
+      "label": "Custom title"
+    },
+    {
+      "type": "text",
+      "id": "button_text_7",
+      "label": "Button text",
+      "default": "Shop Now"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_title_7",
+      "label": "Show title",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_button_7",
+      "label": "Show button",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Menu Item 8"
+    },
+    {
+      "type": "collection",
+      "id": "collection_8",
+      "label": "Collection"
+    },
+    {
+      "type": "url",
+      "id": "external_link_8",
+      "label": "External link"
+    },
+    {
+      "type": "image_picker",
+      "id": "external_image_8",
+      "label": "External link image"
+    },
+    {
+      "type": "text",
+      "id": "title_8",
+      "label": "Custom title"
+    },
+    {
+      "type": "text",
+      "id": "button_text_8",
+      "label": "Button text",
+      "default": "Shop Now"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_title_8",
+      "label": "Show title",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_button_8",
+      "label": "Show button",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Menu Item 9"
+    },
+    {
+      "type": "collection",
+      "id": "collection_9",
+      "label": "Collection"
+    },
+    {
+      "type": "url",
+      "id": "external_link_9",
+      "label": "External link"
+    },
+    {
+      "type": "image_picker",
+      "id": "external_image_9",
+      "label": "External link image"
+    },
+    {
+      "type": "text",
+      "id": "title_9",
+      "label": "Custom title"
+    },
+    {
+      "type": "text",
+      "id": "button_text_9",
+      "label": "Button text",
+      "default": "Shop Now"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_title_9",
+      "label": "Show title",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_button_9",
+      "label": "Show button",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Menu Item 10"
+    },
+    {
+      "type": "collection",
+      "id": "collection_10",
+      "label": "Collection"
+    },
+    {
+      "type": "url",
+      "id": "external_link_10",
+      "label": "External link"
+    },
+    {
+      "type": "image_picker",
+      "id": "external_image_10",
+      "label": "External link image"
+    },
+    {
+      "type": "text",
+      "id": "title_10",
+      "label": "Custom title"
+    },
+    {
+      "type": "text",
+      "id": "button_text_10",
+      "label": "Button text",
+      "default": "Shop Now"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_title_10",
+      "label": "Show title",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_button_10",
+      "label": "Show button",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Menu Item 11"
+    },
+    {
+      "type": "collection",
+      "id": "collection_11",
+      "label": "Collection"
+    },
+    {
+      "type": "url",
+      "id": "external_link_11",
+      "label": "External link"
+    },
+    {
+      "type": "image_picker",
+      "id": "external_image_11",
+      "label": "External link image"
+    },
+    {
+      "type": "text",
+      "id": "title_11",
+      "label": "Custom title"
+    },
+    {
+      "type": "text",
+      "id": "button_text_11",
+      "label": "Button text",
+      "default": "Shop Now"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_title_11",
+      "label": "Show title",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_button_11",
+      "label": "Show button",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Menu Item 12"
+    },
+    {
+      "type": "collection",
+      "id": "collection_12",
+      "label": "Collection"
+    },
+    {
+      "type": "url",
+      "id": "external_link_12",
+      "label": "External link"
+    },
+    {
+      "type": "image_picker",
+      "id": "external_image_12",
+      "label": "External link image"
+    },
+    {
+      "type": "text",
+      "id": "title_12",
+      "label": "Custom title"
+    },
+    {
+      "type": "text",
+      "id": "button_text_12",
+      "label": "Button text",
+      "default": "Shop Now"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_title_12",
+      "label": "Show title",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_button_12",
+      "label": "Show button",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Menu Item 13"
+    },
+    {
+      "type": "collection",
+      "id": "collection_13",
+      "label": "Collection"
+    },
+    {
+      "type": "url",
+      "id": "external_link_13",
+      "label": "External link"
+    },
+    {
+      "type": "image_picker",
+      "id": "external_image_13",
+      "label": "External link image"
+    },
+    {
+      "type": "text",
+      "id": "title_13",
+      "label": "Custom title"
+    },
+    {
+      "type": "text",
+      "id": "button_text_13",
+      "label": "Button text",
+      "default": "Shop Now"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_title_13",
+      "label": "Show title",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_button_13",
+      "label": "Show button",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Menu Item 14"
+    },
+    {
+      "type": "collection",
+      "id": "collection_14",
+      "label": "Collection"
+    },
+    {
+      "type": "url",
+      "id": "external_link_14",
+      "label": "External link"
+    },
+    {
+      "type": "image_picker",
+      "id": "external_image_14",
+      "label": "External link image"
+    },
+    {
+      "type": "text",
+      "id": "title_14",
+      "label": "Custom title"
+    },
+    {
+      "type": "text",
+      "id": "button_text_14",
+      "label": "Button text",
+      "default": "Shop Now"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_title_14",
+      "label": "Show title",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_button_14",
+      "label": "Show button",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Menu Item 15"
+    },
+    {
+      "type": "collection",
+      "id": "collection_15",
+      "label": "Collection"
+    },
+    {
+      "type": "url",
+      "id": "external_link_15",
+      "label": "External link"
+    },
+    {
+      "type": "image_picker",
+      "id": "external_image_15",
+      "label": "External link image"
+    },
+    {
+      "type": "text",
+      "id": "title_15",
+      "label": "Custom title"
+    },
+    {
+      "type": "text",
+      "id": "button_text_15",
+      "label": "Button text",
+      "default": "Shop Now"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_title_15",
+      "label": "Show title",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_button_15",
+      "label": "Show button",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Menu Item 16"
+    },
+    {
+      "type": "collection",
+      "id": "collection_16",
+      "label": "Collection"
+    },
+    {
+      "type": "url",
+      "id": "external_link_16",
+      "label": "External link"
+    },
+    {
+      "type": "image_picker",
+      "id": "external_image_16",
+      "label": "External link image"
+    },
+    {
+      "type": "text",
+      "id": "title_16",
+      "label": "Custom title"
+    },
+    {
+      "type": "text",
+      "id": "button_text_16",
+      "label": "Button text",
+      "default": "Shop Now"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_title_16",
+      "label": "Show title",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_button_16",
+      "label": "Show button",
+      "default": true
+    }
+  ],
+  "presets": [
+    {
+      "name": "Menu Grid"
+    }
+  ]
+}
+{% endschema %}

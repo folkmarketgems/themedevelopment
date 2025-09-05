@@ -1,0 +1,881 @@
+{% doc %}
+  @prompt
+    Create a responsive testimonial block grid with 3-4 customer testimonials in a row. Each testimonial should include a one-sentence title, star rating display, customer name, manually editable customer feedback text, a link to the product they purchased, an image of the product they bought, and optional links to external review sites like Trustpilot or Google Reviews. Add optimised carousel for mobile with arrow overlaying on grid text , make it mobile view optimized, make it also optimised for desktop viewing, add lazy load, add  left / right / top / bottom. Add option to select full width or page width, Add Lazy Loads for images
+
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-testimonials-container-{{ ai_gen_id }} {
+    width: 100%;
+    {% if block.settings.container_width == 'full' %}
+      max-width: 100vw;
+    {% else %}
+      max-width: 1200px;margin: 0 auto;
+    {% endif %}
+    padding: {{ block.settings.padding_top }}px {{ block.settings.padding_horizontal }}px {{ block.settings.padding_bottom }}px;
+    background-color: {{ block.settings.background_color }};}
+
+  .ai-testimonials-grid-{{ ai_gen_id }} {
+    display: grid;
+    grid-template-columns: repeat({{ block.settings.columns_desktop }}, 1fr);
+    gap: {{ block.settings.grid_gap }}px;
+    position: relative;
+  }
+
+  .ai-testimonial-card-{{ ai_gen_id }} {
+    background-color: {{ block.settings.card_background_color }};
+    border-radius: {{ block.settings.card_border_radius }}px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .ai-testimonial-card-{{ ai_gen_id }}:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  }
+
+  .ai-testimonial-title-{{ ai_gen_id }} {
+    font-size:18px;
+    font-weight: 600;
+    color: {{ block.settings.title_color }};
+    margin: 0;
+    line-height: 1.3;
+  }
+
+  .ai-testimonial-rating-{{ ai_gen_id }} {
+    display: flex;
+    gap: 4px;
+    align-items: center;}
+
+  .ai-testimonial-star-{{ ai_gen_id }} {
+    width: 16px;
+    height: 16px;
+    color: {{ block.settings.star_color }};
+  }
+
+  .ai-testimonial-star-empty-{{ ai_gen_id }} {
+    color: {{ block.settings.star_empty_color }};
+  }
+
+  .ai-testimonial-text-{{ ai_gen_id }} {
+    font-size: 14px;
+    line-height: 1.5;
+    color: {{ block.settings.text_color }};
+    flex-grow: 1;
+  }
+
+  .ai-testimonial-customer-{{ ai_gen_id }} {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .ai-testimonial-product-image-{{ ai_gen_id }} {
+    width: 50px;
+    height: 50px;
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .ai-testimonial-product-image-{{ ai_gen_id }} img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .ai-testimonial-product-placeholder-{{ ai_gen_id }} {
+    width: 100%;
+    height: 100%;
+    background-color: #f4f4f4;
+    display: flex;
+    align-items: center;
+    justify-content: center;}
+
+  .ai-testimonial-product-placeholder-{{ ai_gen_id }} svg {
+    width: 24px;
+    height: 24px;
+    color: #999;
+  }
+
+  .ai-testimonial-customer-info-{{ ai_gen_id }} {
+    flex-grow: 1;
+  }
+
+  .ai-testimonial-customer-name-{{ ai_gen_id }} {
+    font-size: 14px;
+    font-weight: 600;
+    color: {{ block.settings.customer_name_color }};
+    margin: 0 0 4px;
+  }
+
+  .ai-testimonial-product-link-{{ ai_gen_id }} {
+    font-size: 12px;
+    color: {{ block.settings.link_color }};
+    text-decoration: none;
+  }
+
+  .ai-testimonial-product-link-{{ ai_gen_id }}:hover {
+    text-decoration: underline;
+  }
+
+  .ai-testimonial-external-links-{{ ai_gen_id }} {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+  }
+
+  .ai-testimonial-external-link-{{ ai_gen_id }} {
+    font-size: 12px;
+    color: {{ block.settings.external_link_color }};
+    text-decoration: none;
+    padding: 4px 8px;
+    border: 1px solid {{ block.settings.external_link_color }};
+    border-radius: 4px;
+    transition: all 0.3s ease;
+  }
+
+  .ai-testimonial-external-link-{{ ai_gen_id }}:hover {
+    background-color: {{ block.settings.external_link_color }};
+    color: {{ block.settings.card_background_color }};
+  }
+
+  .ai-testimonials-carousel-{{ ai_gen_id }} {
+    display: none;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .ai-testimonials-carousel-track-{{ ai_gen_id }} {
+    display: flex;
+    transition: transform 0.3s ease;
+  }
+
+  .ai-testimonials-carousel-slide-{{ ai_gen_id }} {
+    flex: 0 0 100%;
+    {% if block.settings.columns_mobile == '2' %}
+      flex: 0 0 50%;
+    {% endif %}
+    padding: 0 8px;
+  }
+
+  .ai-testimonials-carousel-arrow-{{ ai_gen_id }} {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    transition: background-color 0.3s ease;
+  }
+
+  .ai-testimonials-carousel-arrow-{{ ai_gen_id }}:hover {
+    background-color: rgba(0, 0, 0, 0.9);
+  }
+
+  .ai-testimonials-carousel-arrow-prev-{{ ai_gen_id }} {
+    left: 16px;
+  }
+
+  .ai-testimonials-carousel-arrow-next-{{ ai_gen_id }} {
+    right: 16px;
+  }
+
+  @media screen and (max-width: 749px) {
+    .ai-testimonials-grid-{{ ai_gen_id }} {
+      display: none;
+    }
+
+    .ai-testimonials-carousel-{{ ai_gen_id }} {
+      display: block;
+    }
+
+    .ai-testimonials-container-{{ ai_gen_id }} {
+      padding: {{ block.settings.padding_top | times: 0.7 }}px {{ block.settings.padding_horizontal | times: 0.7 }}px {{ block.settings.padding_bottom | times: 0.7 }}px;
+    }
+
+    .ai-testimonial-card-{{ ai_gen_id }} {
+      padding: 20px;
+    }
+  }
+
+  @media screen and (min-width: 750px) and (max-width: 989px) {
+    .ai-testimonials-grid-{{ ai_gen_id }} {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+{% endstyle %}<testimonials-carousel-{{ ai_gen_id }}
+  class="ai-testimonials-container-{{ ai_gen_id }}"
+  {{ block.shopify_attributes }}
+>
+  <div class="ai-testimonials-grid-{{ ai_gen_id }}">
+    {% for i in (1..4) %}
+      {% liquid
+        assign title_key = 'testimonial_' | append: i | append: '_title'
+        assign rating_key = 'testimonial_' | append: i | append: '_rating'
+        assign text_key = 'testimonial_' | append: i | append: '_text'
+        assign customer_key = 'testimonial_' | append: i | append: '_customer'
+        assign product_key = 'testimonial_' | append: i | append: '_product'
+        assign product_image_key = 'testimonial_' | append: i | append: '_product_image'
+        assign trustpilot_key = 'testimonial_' | append: i | append: '_trustpilot'
+        assign google_key = 'testimonial_' | append: i | append: '_google'
+
+        assign title = block.settings[title_key]
+        assign rating = block.settings[rating_key]
+        assign text = block.settings[text_key]
+        assign customer = block.settings[customer_key]
+        assign product = block.settings[product_key]
+        assign product_image = block.settings[product_image_key]
+        assign trustpilot = block.settings[trustpilot_key]
+        assign google = block.settings[google_key]
+      %}
+
+      {% if title != blank or text != blank or customer != blank %}
+        <div class="ai-testimonial-card-{{ ai_gen_id }}">
+          {% if title != blank %}
+            <h3 class="ai-testimonial-title-{{ ai_gen_id }}">{{ title }}</h3>
+          {% endif %}<div class="ai-testimonial-rating-{{ ai_gen_id }}">
+            {% for star in (1..5) %}<svg
+                class="ai-testimonial-star-{{ ai_gen_id }} {% if star > rating %}ai-testimonial-star-empty-{{ ai_gen_id }}{% endif %}"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+              </svg>
+            {% endfor %}
+          </div>
+
+          {% if text != blank %}
+            <div class="ai-testimonial-text-{{ ai_gen_id }}">{{ text }}</div>
+          {% endif %}
+
+          <div class="ai-testimonial-customer-{{ ai_gen_id }}">
+            <div class="ai-testimonial-product-image-{{ ai_gen_id }}">
+              {% if product_image %}
+                <img
+                  src="{{ product_image | image_url: width: 100}}"
+                  alt="{{ product_image.alt | escape }}"
+                  width="100"
+                  height="100"
+                loading="lazy"
+                >
+              {% elsif product and product.featured_image %}
+                <img
+                  src="{{ product.featured_image | image_url: width: 100 }}"
+                  alt="{{ product.featured_image.alt | escape }}"
+                  width="100"
+                  height="100"
+                  loading="lazy"
+                >
+              {% else %}
+                <div class="ai-testimonial-product-placeholder-{{ ai_gen_id }}">
+                  {{ 'product-1' | placeholder_svg_tag }}
+                </div>
+              {% endif %}
+            </div>
+
+            <div class="ai-testimonial-customer-info-{{ ai_gen_id }}">
+              {% if customer != blank %}
+                <div class="ai-testimonial-customer-name-{{ ai_gen_id }}">{{ customer }}</div>
+              {% endif %}
+              {% if product %}<a href="{{ product.url }}" class="ai-testimonial-product-link-{{ ai_gen_id }}">
+                  {{ product.title }}
+                </a>
+              {% endif %}
+
+              {% if trustpilot != blank or google != blank %}
+                <div class="ai-testimonial-external-links-{{ ai_gen_id }}">
+                  {% if trustpilot != blank %}
+                    <a href="{{ trustpilot }}" class="ai-testimonial-external-link-{{ ai_gen_id }}" target="_blank" rel="noopener">
+                      Trustpilot
+                    </a>
+                  {% endif %}
+                  {% if google != blank %}<a href="{{ google }}" class="ai-testimonial-external-link-{{ ai_gen_id }}" target="_blank" rel="noopener">
+                      Google Reviews
+                    </a>
+                  {% endif %}
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div><div class="ai-testimonials-carousel-{{ ai_gen_id }}">
+    <div class="ai-testimonials-carousel-track-{{ ai_gen_id }}">
+      {% for i in (1..4) %}
+        {% liquid
+          assign title_key = 'testimonial_' | append: i | append: '_title'
+          assign rating_key = 'testimonial_' | append: i | append: '_rating'
+          assign text_key = 'testimonial_' | append: i | append: '_text'
+          assign customer_key = 'testimonial_' | append: i | append: '_customer'
+          assign product_key = 'testimonial_' | append: i | append: '_product'
+          assign product_image_key = 'testimonial_' | append: i | append: '_product_image'
+          assign trustpilot_key = 'testimonial_' | append: i | append: '_trustpilot'
+          assign google_key = 'testimonial_' | append: i | append: '_google'
+
+          assign title = block.settings[title_key]
+          assign rating = block.settings[rating_key]
+          assign text = block.settings[text_key]
+          assign customer = block.settings[customer_key]
+          assign product = block.settings[product_key]
+          assign product_image = block.settings[product_image_key]
+          assign trustpilot = block.settings[trustpilot_key]
+          assign google = block.settings[google_key]
+        %}
+
+        {% if title != blank or text != blank or customer != blank %}
+          <div class="ai-testimonials-carousel-slide-{{ ai_gen_id }}">
+            <div class="ai-testimonial-card-{{ ai_gen_id }}">
+              {% if title != blank %}
+                <h3 class="ai-testimonial-title-{{ ai_gen_id }}">{{ title }}</h3>
+              {% endif %}
+
+              <div class="ai-testimonial-rating-{{ ai_gen_id }}">
+                {% for star in (1..5) %}
+                  <svg
+                    class="ai-testimonial-star-{{ ai_gen_id }} {% if star > rating %}ai-testimonial-star-empty-{{ ai_gen_id }}{% endif %}"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                  </svg>
+                {% endfor %}
+              </div>
+
+              {% if text != blank %}
+                <div class="ai-testimonial-text-{{ ai_gen_id }}">{{ text }}</div>
+              {% endif %}
+
+              <div class="ai-testimonial-customer-{{ ai_gen_id }}">
+                <div class="ai-testimonial-product-image-{{ ai_gen_id }}">
+                  {% if product_image %}
+                    <img
+                      src="{{ product_image | image_url: width: 100 }}"
+                      alt="{{ product_image.alt | escape }}"
+                      width="100"
+                      height="100"
+                      loading="lazy"
+                    >
+                  {% elsif product and product.featured_image %}
+                    <img
+                      src="{{ product.featured_image | image_url: width: 100 }}"
+                      alt="{{ product.featured_image.alt | escape }}"
+                      width="100"
+                      height="100"
+                      loading="lazy"
+                    >
+                  {% else %}
+                    <div class="ai-testimonial-product-placeholder-{{ ai_gen_id }}">
+                      {{ 'product-1' | placeholder_svg_tag }}
+                    </div>
+                  {% endif %}
+                </div>
+
+                <div class="ai-testimonial-customer-info-{{ ai_gen_id }}">
+                  {% if customer != blank %}
+                    <div class="ai-testimonial-customer-name-{{ ai_gen_id }}">{{ customer }}</div>
+                  {% endif %}
+                  {% if product %}
+                    <a href="{{ product.url }}" class="ai-testimonial-product-link-{{ ai_gen_id }}">
+                      {{ product.title }}
+                    </a>
+                  {% endif %}
+
+                  {% if trustpilot != blank or google != blank %}
+                    <div class="ai-testimonial-external-links-{{ ai_gen_id }}">
+                      {% if trustpilot != blank %}
+                        <a href="{{ trustpilot }}" class="ai-testimonial-external-link-{{ ai_gen_id }}" target="_blank" rel="noopener">
+                          Trustpilot
+                        </a>
+                      {% endif %}
+                      {% if google != blank %}
+                        <a href="{{ google }}" class="ai-testimonial-external-link-{{ ai_gen_id }}" target="_blank" rel="noopener">
+                          Google Reviews
+                        </a>
+                      {% endif %}
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    <button class="ai-testimonials-carousel-arrow-{{ ai_gen_id }} ai-testimonials-carousel-arrow-prev-{{ ai_gen_id }}" aria-label="Previous testimonial">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15,18 9,12 15,6"></polyline>
+      </svg>
+    </button>
+
+    <button class="ai-testimonials-carousel-arrow-{{ ai_gen_id }} ai-testimonials-carousel-arrow-next-{{ ai_gen_id }}" aria-label="Next testimonial">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="9,18 15,12 9,6"></polyline>
+      </svg>
+    </button>
+  </div>
+</testimonials-carousel-{{ ai_gen_id }}>
+
+<script>
+  (function() {
+    class TestimonialsCarousel{{ ai_gen_id }} extends HTMLElement {
+      constructor() {
+        super();
+        this.currentSlide = 0;
+        this.totalSlides = 0;
+        this.slidesPerView = 1;}
+
+      connectedCallback() {
+        this.carousel = this.querySelector('.ai-testimonials-carousel-{{ ai_gen_id }}');
+        this.track = this.querySelector('.ai-testimonials-carousel-track-{{ ai_gen_id }}');
+        this.slides = this.querySelectorAll('.ai-testimonials-carousel-slide-{{ ai_gen_id }}');
+        this.prevButton = this.querySelector('.ai-testimonials-carousel-arrow-prev-{{ ai_gen_id }}');
+        this.nextButton = this.querySelector('.ai-testimonials-carousel-arrow-next-{{ ai_gen_id }}');
+
+        this.totalSlides = this.slides.length;
+        this.slidesPerView = window.innerWidth <= 749 && '{{ block.settings.columns_mobile }}' === '2' ? 2 : 1;
+
+        this.setupEventListeners();
+        this.updateCarousel();
+      }
+
+      setupEventListeners() {
+        this.prevButton.addEventListener('click', () => this.prevSlide());
+        this.nextButton.addEventListener('click', () => this.nextSlide());
+
+        window.addEventListener('resize', () => {
+          this.slidesPerView = window.innerWidth <= 749 && '{{ block.settings.columns_mobile }}' === '2' ? 2 : 1;
+          this.updateCarousel();
+        });
+      }
+
+      prevSlide() {
+        this.currentSlide = Math.max(0, this.currentSlide - this.slidesPerView);
+        this.updateCarousel();
+      }
+
+      nextSlide() {
+        const maxSlide = Math.max(0, this.totalSlides - this.slidesPerView);
+        this.currentSlide = Math.min(maxSlide, this.currentSlide + this.slidesPerView);
+        this.updateCarousel();
+      }
+
+      updateCarousel() {
+        const translateX = -(this.currentSlide * (100 / this.slidesPerView));
+        this.track.style.transform = `translateX(${translateX}%)`;
+
+        this.prevButton.style.opacity = this.currentSlide === 0 ? '0.5' : '1';
+        this.prevButton.disabled = this.currentSlide === 0;
+
+        const maxSlide = Math.max(0, this.totalSlides - this.slidesPerView);
+        this.nextButton.style.opacity = this.currentSlide >= maxSlide ? '0.5' : '1';
+        this.nextButton.disabled = this.currentSlide >= maxSlide;
+      }
+    }
+
+    customElements.define('testimonials-carousel-{{ ai_gen_id }}', TestimonialsCarousel{{ ai_gen_id }});
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Customer Testimonials",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "container_width",
+      "label": "Container width",
+      "options": [
+        {
+          "value": "page",
+          "label": "Page width"
+        },
+        {
+          "value": "full",
+          "label": "Full width"
+        }
+      ],
+      "default": "page"
+    },
+    {
+      "type": "select",
+      "id": "columns_desktop",
+      "label": "Columns on desktop",
+      "options": [
+        {
+          "value": "3",
+          "label": "3"
+        },
+        {
+          "value": "4",
+          "label": "4"
+        }
+      ],
+      "default": "3"
+    },
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "label": "Columns on mobile",
+      "options": [
+        {
+          "value": "1",
+          "label": "1"
+        },
+        {
+          "value": "2",
+          "label": "2"
+        }
+      ],
+      "default": "1"
+    },
+    {
+      "type": "range",
+      "id": "grid_gap",
+      "min": 10,
+      "max": 50,
+      "step": 5,
+      "unit": "px",
+      "label": "Grid gap",
+      "default": 20
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "padding_horizontal",
+      "min": 0,
+      "max": 50,
+      "step": 5,
+      "unit": "px",
+      "label": "Horizontal padding",
+      "default": 20
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "card_background_color",
+      "label": "Card background color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "title_color",
+      "label": "Title color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#666666"
+    },
+    {
+      "type": "color",
+      "id": "customer_name_color",
+      "label": "Customer name color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "star_color",
+      "label": "Star color",
+      "default": "#ffd700"
+    },
+    {
+      "type": "color",
+      "id": "star_empty_color",
+      "label": "Empty star color",
+      "default": "#e0e0e0"
+    },
+    {
+      "type": "color",
+      "id": "link_color",
+      "label": "Product link color",
+      "default": "#000f9f"
+    },
+    {
+      "type": "color",
+      "id": "external_link_color",
+      "label": "External link color",
+      "default": "#666666"
+    },
+    {
+      "type": "header",
+      "content": "Style"
+    },
+    {
+      "type": "range",
+      "id": "card_border_radius",
+      "min": 0,
+      "max": 20,
+      "step": 2,
+      "unit": "px",
+      "label": "Card border radius",
+      "default": 8
+    },
+    {
+      "type": "header",
+      "content": "Testimonial 1"
+    },
+    {
+      "type": "text",
+      "id": "testimonial_1_title",
+      "label": "Title",
+      "default": "Amazing quality and fast shipping!"
+    },
+    {
+      "type": "range",
+      "id": "testimonial_1_rating",
+      "min": 1,
+      "max": 5,
+      "step": 1,
+      "label": "Rating",
+      "default": 5
+    },
+    {
+      "type": "textarea",
+      "id": "testimonial_1_text",
+      "label": "Customer feedback",
+      "default": "I absolutely love this product! The quality exceeded my expectations and it arrived much faster than I thought it would."
+    },
+    {
+      "type": "text",
+      "id": "testimonial_1_customer",
+      "label": "Customer name",
+      "default": "Sarah Johnson"
+    },
+    {
+      "type": "product",
+      "id": "testimonial_1_product",
+      "label": "Product"
+    },
+    {
+      "type": "image_picker",
+      "id": "testimonial_1_product_image",
+      "label": "Product image override"
+    },
+    {
+      "type": "url",
+      "id": "testimonial_1_trustpilot",
+      "label": "Trustpilot review link"
+    },
+    {
+      "type": "url",
+      "id": "testimonial_1_google",
+      "label": "Google review link"
+    },
+    {
+      "type": "header",
+      "content": "Testimonial 2"
+    },
+    {
+      "type": "text",
+      "id": "testimonial_2_title",
+      "label": "Title",
+      "default": "Excellent customer service and product!"
+    },
+    {
+      "type": "range",
+      "id": "testimonial_2_rating",
+      "min": 1,
+      "max": 5,
+      "step": 1,
+      "label": "Rating",
+      "default": 5
+    },
+    {
+      "type": "textarea",
+      "id": "testimonial_2_text",
+      "label": "Customer feedback",
+      "default": "The customer service team was incredibly helpful and the product quality is outstanding. Highly recommend!"
+    },
+    {
+      "type": "text",
+      "id": "testimonial_2_customer",
+      "label": "Customer name",
+      "default": "Michael Chen"
+    },
+    {
+      "type": "product",
+      "id": "testimonial_2_product",
+      "label": "Product"
+    },
+    {
+      "type": "image_picker",
+      "id": "testimonial_2_product_image",
+      "label": "Product image override"
+    },
+    {
+      "type": "url",
+      "id": "testimonial_2_trustpilot",
+      "label": "Trustpilot review link"
+    },
+    {
+      "type": "url",
+      "id": "testimonial_2_google",
+      "label": "Google review link"
+    },
+    {
+      "type": "header",
+      "content": "Testimonial 3"
+    },
+    {
+      "type": "text",
+      "id": "testimonial_3_title",
+      "label": "Title",
+      "default": "Perfect fit and great value!"
+    },
+    {
+      "type": "range",
+      "id": "testimonial_3_rating",
+      "min": 1,
+      "max": 5,
+      "step": 1,
+      "label": "Rating",
+      "default": 4
+    },
+    {
+      "type": "textarea",
+      "id": "testimonial_3_text",
+      "label": "Customer feedback",
+      "default": "This product fits perfectly and offers great value for money. I'm very satisfied with my purchase."
+    },
+    {
+      "type": "text",
+      "id": "testimonial_3_customer",
+      "label": "Customer name",
+      "default": "Emma Wilson"
+    },
+    {
+      "type": "product",
+      "id": "testimonial_3_product",
+      "label": "Product"
+    },
+    {
+      "type": "image_picker",
+      "id": "testimonial_3_product_image",
+      "label": "Product image override"
+    },
+    {
+      "type": "url",
+      "id": "testimonial_3_trustpilot",
+      "label": "Trustpilot review link"
+    },
+    {
+      "type": "url",
+      "id": "testimonial_3_google",
+      "label": "Google review link"
+    },
+    {
+      "type": "header",
+      "content": "Testimonial 4"
+    },
+    {
+      "type": "text",
+      "id": "testimonial_4_title",
+      "label": "Title",
+      "default": "Would definitely buy again!"
+    },
+    {
+      "type": "range",
+      "id": "testimonial_4_rating",
+      "min": 1,
+      "max": 5,
+      "step": 1,
+      "label": "Rating",
+      "default": 5
+    },
+    {
+      "type": "textarea",
+      "id": "testimonial_4_text",
+      "label": "Customer feedback",
+      "default": "Fantastic product that exceeded all my expectations. The quality is top-notch and I would definitely purchase again."
+    },
+    {
+      "type": "text",
+      "id": "testimonial_4_customer",
+      "label": "Customer name",
+      "default": "David Rodriguez"
+    },
+    {
+      "type": "product",
+      "id": "testimonial_4_product",
+      "label": "Product"
+    },
+    {
+      "type": "image_picker",
+      "id": "testimonial_4_product_image",
+      "label": "Product image override"
+    },
+    {
+      "type": "url",
+      "id": "testimonial_4_trustpilot",
+      "label": "Trustpilot review link"
+    },
+    {
+      "type": "url",
+      "id": "testimonial_4_google",
+      "label": "Google review link"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Customer Testimonials"
+    }
+  ]
+}
+{% endschema %}
